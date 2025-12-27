@@ -1,5 +1,7 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
+  AppState,
+  AppStateStatus,
   FlatList,
   Pressable,
   StyleSheet,
@@ -11,9 +13,16 @@ import { Stack, useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 
 import type { AppSettings, BathroomEvent, EventType } from '../src/types';
-import { appendEvent, loadEvents, loadSettings } from '../src/lib/storage';
+import { appendEvent, loadEvents, loadSettings, saveEvents } from '../src/lib/storage';
 import { getTheme } from '../src/lib/theme';
 import { formatDate, formatTime } from '../src/lib/time';
+import { DEFAULT_PEE_ICON, DEFAULT_POOP_ICON } from '../src/lib/icons';
+import {
+  clearQueuedWidgetEvents,
+  getQueuedWidgetEvents,
+  mirrorWidgetSettings,
+  mirrorWidgetSummary,
+} from '../src/lib/widget-bridge';
 
 type RangeFilter = 'today' | 'week' | 'month' | 'year' | 'all';
 type TypeFilter = 'all' | EventType;
@@ -84,29 +93,85 @@ export default function HomeScreen() {
   const [settings, setSettings] = useState<AppSettings | null>(null);
   const [rangeFilter, setRangeFilter] = useState<RangeFilter>('today');
   const [typeFilter, setTypeFilter] = useState<TypeFilter>('all');
+  const isMountedRef = useRef(true);
+  const isLoadingRef = useRef(false);
+
+  const mergeWidgetQueue = useCallback(async (baseEvents: BathroomEvent[]) => {
+    const queued = await getQueuedWidgetEvents();
+    if (queued.length === 0) {
+      return baseEvents;
+    }
+    const existingIds = new Set(baseEvents.map((event) => event.id));
+    const uniqueQueued = queued.filter((event) => !existingIds.has(event.id));
+    if (uniqueQueued.length === 0) {
+      await clearQueuedWidgetEvents();
+      return baseEvents;
+    }
+    const merged = [...uniqueQueued, ...baseEvents].sort((a, b) => b.ts - a.ts);
+    await saveEvents(merged);
+    await clearQueuedWidgetEvents();
+    return merged;
+  }, []);
+
+  const loadFromStorage = useCallback(async () => {
+    if (isLoadingRef.current) {
+      return;
+    }
+    isLoadingRef.current = true;
+    try {
+      const [loadedSettings, loadedEvents] = await Promise.all([loadSettings(), loadEvents()]);
+      if (!isMountedRef.current) {
+        return;
+      }
+      const mergedEvents = await mergeWidgetQueue(loadedEvents);
+      if (!isMountedRef.current) {
+        return;
+      }
+      setSettings(loadedSettings);
+      setEvents(mergedEvents);
+    } finally {
+      isLoadingRef.current = false;
+    }
+  }, [mergeWidgetQueue]);
 
   useFocusEffect(
     useCallback(() => {
-      let isActive = true;
-      const load = async () => {
-        const [loadedSettings, loadedEvents] = await Promise.all([loadSettings(), loadEvents()]);
-        if (!isActive) {
-          return;
-        }
-        setSettings(loadedSettings);
-        setEvents(loadedEvents);
-      };
-      load();
-      return () => {
-        isActive = false;
-      };
-    }, [])
+      loadFromStorage();
+    }, [loadFromStorage])
   );
+
+  useEffect(() => {
+    const handleAppStateChange = (nextState: AppStateStatus) => {
+      if (nextState === 'active') {
+        void loadFromStorage();
+      }
+    };
+    const subscription = AppState.addEventListener('change', handleAppStateChange);
+    return () => {
+      subscription.remove();
+    };
+  }, [loadFromStorage]);
+
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   const theme = getTheme(settings?.themeId ?? 't1');
   const timeMode = settings?.timeFormat ?? '24h';
-  const iconPee = settings?.iconPee ?? 'P';
-  const iconPoop = settings?.iconPoop ?? 'C';
+  const iconPee = settings?.iconPee ?? DEFAULT_PEE_ICON;
+  const iconPoop = settings?.iconPoop ?? DEFAULT_POOP_ICON;
+
+  useEffect(() => {
+    if (settings) {
+      mirrorWidgetSettings(settings);
+    }
+  }, [settings]);
+
+  useEffect(() => {
+    mirrorWidgetSummary(events);
+  }, [events]);
 
   const todayCounts = useMemo(() => {
     const start = startOfDay(Date.now());

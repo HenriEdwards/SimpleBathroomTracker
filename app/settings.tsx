@@ -6,28 +6,31 @@ import {
   StyleSheet,
   Switch,
   Text,
-  TextInput,
   View,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 
 import UpgradeModal from '../components/upgrade-modal';
+import IconPickerModal from '../src/components/IconPickerModal';
 import type { AppSettings, ProState } from '../src/types';
 import { loadProState, loadSettings, saveSettings, clearAllEvents } from '../src/lib/storage';
 import { getEffectivePro, setDevProOverride } from '../src/lib/pro';
 import { getTheme, THEME_PRESETS } from '../src/lib/theme';
+import { DEFAULT_PEE_ICON, DEFAULT_POOP_ICON, ICON_PRESETS, isValidIcon } from '../src/lib/icons';
+import { mirrorWidgetSettings } from '../src/lib/widget-bridge';
 
 const DEFAULT_SETTINGS: AppSettings = {
   timeFormat: '24h',
   themeId: 't1',
-  iconPee: 'dYs«',
-  iconPoop: "dY'c",
+  iconPee: DEFAULT_PEE_ICON,
+  iconPoop: DEFAULT_POOP_ICON,
 };
 
 export default function SettingsScreen() {
   const [settings, setSettings] = useState<AppSettings | null>(null);
   const [proState, setProState] = useState<ProState | null>(null);
   const [showUpgrade, setShowUpgrade] = useState(false);
+  const [activePicker, setActivePicker] = useState<'pee' | 'poop' | null>(null);
 
   useFocusEffect(
     useCallback(() => {
@@ -39,6 +42,7 @@ export default function SettingsScreen() {
         }
         setSettings(loadedSettings);
         setProState(loadedPro);
+        await mirrorWidgetSettings(loadedSettings);
       };
       load();
       return () => {
@@ -49,10 +53,25 @@ export default function SettingsScreen() {
 
   const theme = getTheme(settings?.themeId ?? 't1');
   const isPro = proState ? getEffectivePro(proState) : false;
+  const iconPee = settings?.iconPee ?? DEFAULT_PEE_ICON;
+  const iconPoop = settings?.iconPoop ?? DEFAULT_POOP_ICON;
 
   const updateSettings = async (next: AppSettings) => {
     setSettings(next);
     await saveSettings(next);
+    await mirrorWidgetSettings(next);
+  };
+
+  const handleIconSelect = async (icon: string) => {
+    if (!settings || !activePicker || !isValidIcon(icon)) {
+      return;
+    }
+    const next: AppSettings =
+      activePicker === 'pee'
+        ? { ...settings, iconPee: icon }
+        : { ...settings, iconPoop: icon };
+    await updateSettings(next);
+    setActivePicker(null);
   };
 
   const handleClearEvents = () => {
@@ -138,28 +157,38 @@ export default function SettingsScreen() {
 
         <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Icons / Privacy</Text>
         <View style={[styles.card, { backgroundColor: theme.colors.card }]}>
-          <Text style={[styles.label, { color: theme.colors.text }]}>Pee icon</Text>
-          <TextInput
-            style={[styles.input, { borderColor: theme.colors.border, color: theme.colors.text }]}
-            value={settings?.iconPee ?? ''}
-            maxLength={2}
-            onChangeText={(value) =>
-              settings ? updateSettings({ ...settings, iconPee: value.slice(0, 2) }) : null
-            }
-            placeholder="P"
-            placeholderTextColor={theme.colors.muted}
-          />
-          <Text style={[styles.label, { color: theme.colors.text }]}>Poop icon</Text>
-          <TextInput
-            style={[styles.input, { borderColor: theme.colors.border, color: theme.colors.text }]}
-            value={settings?.iconPoop ?? ''}
-            maxLength={2}
-            onChangeText={(value) =>
-              settings ? updateSettings({ ...settings, iconPoop: value.slice(0, 2) }) : null
-            }
-            placeholder="C"
-            placeholderTextColor={theme.colors.muted}
-          />
+          <Pressable
+            style={[
+              styles.iconRow,
+              { borderColor: theme.colors.border, backgroundColor: theme.colors.card },
+            ]}
+            onPress={() => setActivePicker('pee')}
+            disabled={!settings}
+          >
+            <View style={styles.iconCopy}>
+              <Text style={[styles.label, { color: theme.colors.text }]}>Pee icon</Text>
+              <Text style={[styles.iconHint, { color: theme.colors.muted }]}>
+                Choose an icon for privacy
+              </Text>
+            </View>
+            <Text style={[styles.iconPreview, { color: theme.colors.text }]}>{iconPee}</Text>
+          </Pressable>
+          <Pressable
+            style={[
+              styles.iconRow,
+              { borderColor: theme.colors.border, backgroundColor: theme.colors.card },
+            ]}
+            onPress={() => setActivePicker('poop')}
+            disabled={!settings}
+          >
+            <View style={styles.iconCopy}>
+              <Text style={[styles.label, { color: theme.colors.text }]}>Poop icon</Text>
+              <Text style={[styles.iconHint, { color: theme.colors.muted }]}>
+                Choose an icon for privacy
+              </Text>
+            </View>
+            <Text style={[styles.iconPreview, { color: theme.colors.text }]}>{iconPoop}</Text>
+          </Pressable>
         </View>
 
         <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Pro</Text>
@@ -212,6 +241,16 @@ export default function SettingsScreen() {
           </Pressable>
         </View>
       </ScrollView>
+
+      <IconPickerModal
+        visible={activePicker !== null}
+        title={activePicker === 'poop' ? 'Poop icon' : 'Pee icon'}
+        selected={activePicker === 'poop' ? iconPoop : iconPee}
+        options={ICON_PRESETS}
+        onSelect={handleIconSelect}
+        onClose={() => setActivePicker(null)}
+        theme={theme}
+      />
 
       <UpgradeModal
         visible={showUpgrade}
@@ -270,11 +309,25 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     alignItems: 'center',
   },
-  input: {
+  iconRow: {
+    borderRadius: 12,
     borderWidth: 1,
-    borderRadius: 10,
+    paddingVertical: 12,
     paddingHorizontal: 12,
-    paddingVertical: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  iconCopy: {
+    flex: 1,
+    gap: 4,
+  },
+  iconHint: {
+    fontSize: 12,
+  },
+  iconPreview: {
+    fontSize: 28,
   },
   primaryButton: {
     paddingVertical: 12,

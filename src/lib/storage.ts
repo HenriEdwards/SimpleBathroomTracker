@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import type { AppSettings, BathroomEvent, EventType, ProState } from '../types';
+import { DEFAULT_PEE_ICON, DEFAULT_POOP_ICON, isValidIcon } from './icons';
 
 const BC_EVENTS = 'BC_EVENTS';
 const BC_SETTINGS = 'BC_SETTINGS';
@@ -9,8 +10,8 @@ const BC_PRO = 'BC_PRO';
 const DEFAULT_SETTINGS: AppSettings = {
   timeFormat: '24h',
   themeId: 't1',
-  iconPee: 'dYs«',
-  iconPoop: "dY'c",
+  iconPee: DEFAULT_PEE_ICON,
+  iconPoop: DEFAULT_POOP_ICON,
 };
 
 const DEFAULT_PRO: ProState = {
@@ -74,12 +75,25 @@ export async function loadSettings(): Promise<AppSettings> {
   if (!stored) {
     return DEFAULT_SETTINGS;
   }
-  return {
+  const normalized: AppSettings = {
     timeFormat: stored.timeFormat === '12h' ? '12h' : '24h',
     themeId: stored.themeId ?? 't1',
-    iconPee: stored.iconPee ?? DEFAULT_SETTINGS.iconPee,
-    iconPoop: stored.iconPoop ?? DEFAULT_SETTINGS.iconPoop,
+    iconPee: stored.iconPee ?? DEFAULT_PEE_ICON,
+    iconPoop: stored.iconPoop ?? DEFAULT_POOP_ICON,
   };
+  let sanitized = false;
+  if (!isValidIcon(normalized.iconPee)) {
+    normalized.iconPee = DEFAULT_PEE_ICON;
+    sanitized = true;
+  }
+  if (!isValidIcon(normalized.iconPoop)) {
+    normalized.iconPoop = DEFAULT_POOP_ICON;
+    sanitized = true;
+  }
+  if (sanitized) {
+    await saveSettings(normalized);
+  }
+  return normalized;
 }
 
 export async function saveSettings(settings: AppSettings): Promise<void> {
