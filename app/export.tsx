@@ -196,7 +196,7 @@ export default function ExportScreen() {
     setBusy(true);
     try {
       const content = buildPlainText(filteredEvents, settings);
-      const uri = `${baseDir}BathroomCounter-export-${Date.now()}.txt`;
+      const uri = `${baseDir}SimpleBathroomTracker-export-${Date.now()}.txt`;
       await FileSystem.writeAsStringAsync(uri, content, {
         encoding: FileSystem.EncodingType.UTF8,
       });
@@ -223,7 +223,7 @@ export default function ExportScreen() {
     setBusy(true);
     try {
       const content = buildCSV(filteredEvents, settings);
-      const uri = `${baseDir}BathroomCounter-export-${Date.now()}.csv`;
+      const uri = `${baseDir}SimpleBathroomTracker-export-${Date.now()}.csv`;
       await FileSystem.writeAsStringAsync(uri, content, {
         encoding: FileSystem.EncodingType.UTF8,
       });

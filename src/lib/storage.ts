@@ -7,6 +7,8 @@ const BC_EVENTS = 'BC_EVENTS';
 const BC_SETTINGS = 'BC_SETTINGS';
 const BC_PRO = 'BC_PRO';
 
+type SettingsListener = (settings: AppSettings) => void;
+
 const DEFAULT_SETTINGS: AppSettings = {
   timeFormat: '24h',
   themeId: 't1',
@@ -20,6 +22,8 @@ const DEFAULT_PRO: ProState = {
   isPro: false,
   devProOverride: false,
 };
+
+const settingsListeners = new Set<SettingsListener>();
 
 function safeParse<T>(raw: string | null): T | null {
   if (!raw) {
@@ -109,6 +113,14 @@ export async function loadSettings(): Promise<AppSettings> {
 
 export async function saveSettings(settings: AppSettings): Promise<void> {
   await saveJson(BC_SETTINGS, settings);
+  settingsListeners.forEach((listener) => listener(settings));
+}
+
+export function subscribeSettings(listener: SettingsListener): () => void {
+  settingsListeners.add(listener);
+  return () => {
+    settingsListeners.delete(listener);
+  };
 }
 
 export async function loadProState(): Promise<ProState> {

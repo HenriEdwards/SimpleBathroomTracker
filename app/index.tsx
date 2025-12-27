@@ -246,7 +246,7 @@ export default function HomeScreen() {
     <View style={[styles.container, { backgroundColor: theme.colors.bg }]}>
       <Stack.Screen
         options={{
-          title: 'BathroomCounter',
+          title: 'Simple Bathroom Tracker',
           headerLeft: () => (
             <Pressable onPress={() => router.push('/settings')} style={styles.headerButton}>
               <Text style={[styles.headerButtonText, { color: theme.colors.primary }]}>Settings</Text>
@@ -264,7 +264,6 @@ export default function HomeScreen() {
         keyExtractor={(item) => item.id}
         ListHeaderComponent={
           <View style={styles.headerContent}>
-            <Text style={[styles.title, { color: theme.colors.text }]}>BathroomCounter</Text>
             <View style={actionLayout[0]}>
               <Pressable
                 style={[actionLayout[1], { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}
