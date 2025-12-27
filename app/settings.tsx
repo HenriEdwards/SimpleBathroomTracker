@@ -12,14 +12,14 @@ import {
 import Slider from '@react-native-community/slider';
 import { useFocusEffect } from '@react-navigation/native';
 
-import UpgradeModal from '../components/upgrade-modal';
 import IconPickerModal from '../src/components/IconPickerModal';
-import type { AppSettings, ProState } from '../src/types';
-import { loadProState, loadSettings, saveSettings, clearAllEvents } from '../src/lib/storage';
-import { getEffectivePro, setDevProOverride } from '../src/lib/pro';
+import type { AppSettings } from '../src/types';
+import { loadSettings, saveSettings, clearAllEvents } from '../src/lib/storage';
+import { setDevProOverride, usePro } from '../src/lib/pro';
 import { getTheme, resolveThemeMode, THEME_PRESETS } from '../src/lib/theme';
 import { DEFAULT_PEE_ICON, DEFAULT_POOP_ICON, ICON_PRESETS, isValidIcon } from '../src/lib/icons';
 import { mirrorWidgetSettings } from '../src/lib/widget-bridge';
+import { usePaywall } from '../src/lib/paywall';
 
 const DEFAULT_SETTINGS: AppSettings = {
   timeFormat: '24h',
@@ -32,21 +32,20 @@ const DEFAULT_SETTINGS: AppSettings = {
 
 export default function SettingsScreen() {
   const [settings, setSettings] = useState<AppSettings | null>(null);
-  const [proState, setProState] = useState<ProState | null>(null);
-  const [showUpgrade, setShowUpgrade] = useState(false);
   const [activePicker, setActivePicker] = useState<'pee' | 'poop' | null>(null);
   const systemMode = useColorScheme();
+  const { isPro, devProOverride } = usePro();
+  const { openPaywall } = usePaywall();
 
   useFocusEffect(
     useCallback(() => {
       let isActive = true;
       const load = async () => {
-        const [loadedSettings, loadedPro] = await Promise.all([loadSettings(), loadProState()]);
+        const [loadedSettings] = await Promise.all([loadSettings()]);
         if (!isActive) {
           return;
         }
         setSettings(loadedSettings);
-        setProState(loadedPro);
         await mirrorWidgetSettings(loadedSettings);
       };
       load();
@@ -58,10 +57,10 @@ export default function SettingsScreen() {
 
   const resolvedMode = resolveThemeMode(settings?.themeMode, systemMode);
   const theme = getTheme({ presetId: settings?.themeId ?? 't1', mode: resolvedMode });
-  const isPro = proState ? getEffectivePro(proState) : false;
   const iconPee = settings?.iconPee ?? DEFAULT_PEE_ICON;
   const iconPoop = settings?.iconPoop ?? DEFAULT_POOP_ICON;
   const widgetOpacity = settings?.widgetOpacity ?? 1;
+  const customizationLocked = !isPro;
 
   const updateSettings = async (next: AppSettings) => {
     setSettings(next);
@@ -88,7 +87,7 @@ export default function SettingsScreen() {
   };
 
   const handleIconSelect = async (icon: string) => {
-    if (!settings || !activePicker || !isValidIcon(icon)) {
+    if (!settings || !activePicker || !isValidIcon(icon) || customizationLocked) {
       return;
     }
     const next: AppSettings =
@@ -155,20 +154,35 @@ export default function SettingsScreen() {
               );
             })}
           </View>
-          <Text style={[styles.label, { color: theme.colors.text }]}>Theme preset</Text>
+          <View style={styles.sectionRow}>
+            <Text style={[styles.label, { color: theme.colors.text }]}>Theme preset</Text>
+            {customizationLocked ? (
+              <View style={[styles.proBadge, { backgroundColor: theme.colors.primary }]}>
+                <Text style={[styles.proBadgeText, { color: theme.colors.primaryText }]}>Pro</Text>
+              </View>
+            ) : null}
+          </View>
           {THEME_PRESETS.map((preset) => {
             const active = settings?.themeId === preset.id;
             return (
               <Pressable
                 key={preset.id}
-                onPress={() =>
-                  settings ? updateSettings({ ...settings, themeId: preset.id }) : null
-                }
+                onPress={() => {
+                  if (!settings) {
+                    return;
+                  }
+                  if (customizationLocked) {
+                    openPaywall();
+                    return;
+                  }
+                  updateSettings({ ...settings, themeId: preset.id });
+                }}
                 style={[
                   styles.rowButton,
                   {
                     borderColor: active ? theme.colors.primary : theme.colors.border,
                     backgroundColor: theme.colors.card,
+                    opacity: customizationLocked ? 0.5 : 1,
                   },
                 ]}
               >
@@ -179,24 +193,33 @@ export default function SettingsScreen() {
             );
           })}
           <Text style={[styles.label, { color: theme.colors.text }]}>Widget opacity</Text>
-          <View style={styles.opacityRow}>
-            <Slider
-              style={styles.opacitySlider}
-              minimumValue={0.5}
-              maximumValue={1}
-              step={0.01}
-              value={widgetOpacity}
-              minimumTrackTintColor={theme.colors.primary}
-              maximumTrackTintColor={theme.colors.border}
-              thumbTintColor={theme.colors.primary}
-              onValueChange={handleOpacityChange}
-              onSlidingComplete={handleOpacityComplete}
-              disabled={!settings}
-            />
-            <Text style={[styles.opacityValue, { color: theme.colors.text }]}>
-              Opacity: {Math.round(widgetOpacity * 100)}%
-            </Text>
-          </View>
+          <Pressable
+            onPress={() => {
+              if (customizationLocked) {
+                openPaywall();
+              }
+            }}
+            disabled={!customizationLocked}
+          >
+            <View style={styles.opacityRow}>
+              <Slider
+                style={styles.opacitySlider}
+                minimumValue={0.5}
+                maximumValue={1}
+                step={0.01}
+                value={widgetOpacity}
+                minimumTrackTintColor={theme.colors.primary}
+                maximumTrackTintColor={theme.colors.border}
+                thumbTintColor={theme.colors.primary}
+                onValueChange={handleOpacityChange}
+                onSlidingComplete={handleOpacityComplete}
+                disabled={!settings || customizationLocked}
+              />
+              <Text style={[styles.opacityValue, { color: theme.colors.text }]}>
+                Opacity: {Math.round(widgetOpacity * 100)}%
+              </Text>
+            </View>
+          </Pressable>
           <Text style={[styles.label, { color: theme.colors.text }]}>Time format</Text>
           <View style={styles.segmentedRow}>
             {(['24h', '12h'] as const).map((value) => {
@@ -229,13 +252,26 @@ export default function SettingsScreen() {
           <Pressable
             style={[
               styles.iconRow,
-              { borderColor: theme.colors.border, backgroundColor: theme.colors.card },
+              {
+                borderColor: theme.colors.border,
+                backgroundColor: theme.colors.card,
+                opacity: customizationLocked ? 0.5 : 1,
+              },
             ]}
-            onPress={() => setActivePicker('pee')}
+            onPress={() => (customizationLocked ? openPaywall() : setActivePicker('pee'))}
             disabled={!settings}
           >
             <View style={styles.iconCopy}>
-              <Text style={[styles.label, { color: theme.colors.text }]}>Pee icon</Text>
+              <View style={styles.sectionRow}>
+                <Text style={[styles.label, { color: theme.colors.text }]}>Pee icon</Text>
+                {customizationLocked ? (
+                  <View style={[styles.proBadge, { backgroundColor: theme.colors.primary }]}>
+                    <Text style={[styles.proBadgeText, { color: theme.colors.primaryText }]}>
+                      Pro
+                    </Text>
+                  </View>
+                ) : null}
+              </View>
               <Text style={[styles.iconHint, { color: theme.colors.muted }]}>
                 Choose an icon for privacy
               </Text>
@@ -245,13 +281,26 @@ export default function SettingsScreen() {
           <Pressable
             style={[
               styles.iconRow,
-              { borderColor: theme.colors.border, backgroundColor: theme.colors.card },
+              {
+                borderColor: theme.colors.border,
+                backgroundColor: theme.colors.card,
+                opacity: customizationLocked ? 0.5 : 1,
+              },
             ]}
-            onPress={() => setActivePicker('poop')}
+            onPress={() => (customizationLocked ? openPaywall() : setActivePicker('poop'))}
             disabled={!settings}
           >
             <View style={styles.iconCopy}>
-              <Text style={[styles.label, { color: theme.colors.text }]}>Poop icon</Text>
+              <View style={styles.sectionRow}>
+                <Text style={[styles.label, { color: theme.colors.text }]}>Poo icon</Text>
+                {customizationLocked ? (
+                  <View style={[styles.proBadge, { backgroundColor: theme.colors.primary }]}>
+                    <Text style={[styles.proBadgeText, { color: theme.colors.primaryText }]}>
+                      Pro
+                    </Text>
+                  </View>
+                ) : null}
+              </View>
               <Text style={[styles.iconHint, { color: theme.colors.muted }]}>
                 Choose an icon for privacy
               </Text>
@@ -267,7 +316,7 @@ export default function SettingsScreen() {
           </Text>
           <Pressable
             style={[styles.primaryButton, { backgroundColor: theme.colors.primary }]}
-            onPress={() => setShowUpgrade(true)}
+            onPress={openPaywall}
           >
             <Text style={{ color: theme.colors.primaryText, fontWeight: '600' }}>Unlock Pro</Text>
           </Pressable>
@@ -280,13 +329,9 @@ export default function SettingsScreen() {
               <View style={styles.rowBetween}>
                 <Text style={[styles.label, { color: theme.colors.text }]}>Enable Pro (dev)</Text>
                 <Switch
-                  value={Boolean(proState?.devProOverride)}
+                  value={Boolean(devProOverride)}
                   onValueChange={async (value) => {
                     await setDevProOverride(value);
-                    setProState((prev) => ({
-                      isPro: prev?.isPro ?? false,
-                      devProOverride: value,
-                    }));
                   }}
                 />
               </View>
@@ -313,28 +358,12 @@ export default function SettingsScreen() {
 
       <IconPickerModal
         visible={activePicker !== null}
-        title={activePicker === 'poop' ? 'Poop icon' : 'Pee icon'}
+        title={activePicker === 'poop' ? 'Poo icon' : 'Pee icon'}
         selected={activePicker === 'poop' ? iconPoop : iconPee}
         options={ICON_PRESETS}
         onSelect={handleIconSelect}
         onClose={() => setActivePicker(null)}
         theme={theme}
-      />
-
-      <UpgradeModal
-        visible={showUpgrade}
-        isPro={isPro}
-        showDevToggle={__DEV__}
-        theme={theme}
-        onClose={() => setShowUpgrade(false)}
-        onEnableDevPro={async () => {
-          await setDevProOverride(true);
-          setProState((prev) => ({
-            isPro: prev?.isPro ?? false,
-            devProOverride: true,
-          }));
-          setShowUpgrade(false);
-        }}
       />
     </View>
   );
@@ -367,6 +396,21 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     borderRadius: 12,
     borderWidth: 1,
+  },
+  sectionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  proBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 10,
+  },
+  proBadgeText: {
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 0.4,
   },
   segmentedRow: {
     flexDirection: 'row',

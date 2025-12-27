@@ -50,6 +50,7 @@ export default function RootLayout() {
         <Stack.Screen name="index" options={{ title: 'Simple Bathroom Tracker' }} />
         <Stack.Screen name="export" options={{ title: 'Export' }} />
         <Stack.Screen name="settings" options={{ title: 'Settings' }} />
+        <Stack.Screen name="paywall" options={{ title: 'Unlock Pro' }} />
       </Stack>
       <StatusBar style={statusBarStyle} backgroundColor={theme.colors.bg} />
     </>

@@ -13,12 +13,12 @@ import * as FileSystem from 'expo-file-system';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 
-import UpgradeModal from '../components/upgrade-modal';
-import type { AppSettings, BathroomEvent, EventType, ProState } from '../src/types';
-import { loadEvents, loadProState, loadSettings } from '../src/lib/storage';
-import { getEffectivePro, setDevProOverride } from '../src/lib/pro';
+import type { AppSettings, BathroomEvent, EventType } from '../src/types';
+import { loadEvents, loadSettings } from '../src/lib/storage';
+import { usePro } from '../src/lib/pro';
 import { getTheme, resolveThemeMode } from '../src/lib/theme';
 import { buildCSV, buildPdfHtml, buildPlainText } from '../src/lib/export';
+import { usePaywall } from '../src/lib/paywall';
 
 type RangeFilter = 'today' | 'week' | 'month' | 'year' | 'all';
 type TypeFilter = 'all' | EventType;
@@ -34,7 +34,7 @@ const RANGE_OPTIONS: Array<{ id: RangeFilter; label: string; summary: string }> 
 const TYPE_OPTIONS: Array<{ id: TypeFilter; label: string }> = [
   { id: 'all', label: 'All' },
   { id: 'pee', label: 'Pee' },
-  { id: 'poop', label: 'Poop' },
+  { id: 'poop', label: 'Poo' },
 ];
 
 function startOfDay(ts: number): number {
@@ -85,28 +85,23 @@ function rangeStart(range: RangeFilter, now: number): number {
 export default function ExportScreen() {
   const [events, setEvents] = useState<BathroomEvent[]>([]);
   const [settings, setSettings] = useState<AppSettings | null>(null);
-  const [proState, setProState] = useState<ProState | null>(null);
   const [rangeFilter, setRangeFilter] = useState<RangeFilter>('today');
   const [typeFilter, setTypeFilter] = useState<TypeFilter>('all');
-  const [showUpgrade, setShowUpgrade] = useState(false);
   const [busy, setBusy] = useState(false);
   const systemMode = useColorScheme();
+  const { isPro } = usePro();
+  const { openPaywall } = usePaywall();
 
   useFocusEffect(
     useCallback(() => {
       let isActive = true;
       const load = async () => {
-        const [loadedSettings, loadedEvents, loadedPro] = await Promise.all([
-          loadSettings(),
-          loadEvents(),
-          loadProState(),
-        ]);
+        const [loadedSettings, loadedEvents] = await Promise.all([loadSettings(), loadEvents()]);
         if (!isActive) {
           return;
         }
         setSettings(loadedSettings);
         setEvents(loadedEvents);
-        setProState(loadedPro);
       };
       load();
       return () => {
@@ -117,7 +112,6 @@ export default function ExportScreen() {
 
   const resolvedMode = resolveThemeMode(settings?.themeMode, systemMode);
   const theme = getTheme({ presetId: settings?.themeId ?? 't1', mode: resolvedMode });
-  const isPro = proState ? getEffectivePro(proState) : false;
 
   const filteredEvents = useMemo(() => {
     const now = Date.now();
@@ -244,7 +238,7 @@ export default function ExportScreen() {
           opacity: busy ? 0.6 : 1,
         },
       ]}
-      onPress={locked ? () => setShowUpgrade(true) : onPress}
+      onPress={locked ? openPaywall : onPress}
       disabled={busy}
     >
       <Text style={{ color: locked ? theme.colors.muted : theme.colors.primaryText, fontWeight: '600' }}>
@@ -310,7 +304,7 @@ export default function ExportScreen() {
         <View style={[styles.card, { backgroundColor: theme.colors.card }]}>
           <Text style={{ color: theme.colors.text }}>Range: {summary.rangeLabel}</Text>
           <Text style={{ color: theme.colors.text }}>
-            Total: {summary.total} (Pee {summary.pee} / Poop {summary.poop})
+            Total: {summary.total} (Pee {summary.pee} / Poo {summary.poop})
           </Text>
         </View>
 
@@ -322,21 +316,6 @@ export default function ExportScreen() {
         </View>
       </ScrollView>
 
-      <UpgradeModal
-        visible={showUpgrade}
-        isPro={isPro}
-        showDevToggle={__DEV__}
-        theme={theme}
-        onClose={() => setShowUpgrade(false)}
-        onEnableDevPro={async () => {
-          await setDevProOverride(true);
-          setProState((prev) => ({
-            isPro: prev?.isPro ?? false,
-            devProOverride: true,
-          }));
-          setShowUpgrade(false);
-        }}
-      />
     </View>
   );
 }

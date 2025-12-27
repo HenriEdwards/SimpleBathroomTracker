@@ -1,112 +1,256 @@
-Batch changes (App + Widget)
-A) App: delete an event from the list (with confirm)
+Codex task: Implement Pro gating + Paywall + Restore flow (widget stays free, customization + exports are Pro)
+Goal
 
-Goal: user can undo misclicks.
+Widget itself remains FREE (users can add/use it).
 
-Add a delete (X) icon per event row in the events list UI (pee + poop lists).
+Customization is PRO: themes, icon picker, widget opacity slider, and export actions (PDF/Text/CSV).
 
-Put it on the far right of the row.
+Locked UI should be clickable → opens Paywall.
 
-Keep row tap (if any) unchanged; only the X triggers delete.
+Paywall must support Buy lifetime + Restore purchases.
 
-On press X → show confirm modal
+Keep existing Developer “Enable Pro (dev)” toggle working for local testing, but ensure it’s not shipped in production builds.
 
-Title: Delete event?
+1) Define what is Pro vs Free
+FREE
 
-Body should include:
+Add/use widget
 
-Event type (Pee/Poop)
+Tap Pee/Poo cards to add events
 
-Event time (formatted same as list)
+View event list + filters in-app
 
-(Optional) date too if you already show it
+Export screen can be visible, but export actions locked
 
-Buttons: Cancel (default) and Delete (destructive)
+PRO (locked)
 
-On confirm Delete
+Theme preset picker (all theme presets)
 
-Remove from storage/db
+Icon privacy picker (Pee icon, Poo icon)
 
-Refresh list immediately
+Widget opacity slider (and any widget customization)
 
-Recalculate counts + “last time”
+Export buttons: Share PDF, Share Text, Share CSV
 
-Trigger widget refresh (same mechanism you already use when adding events)
+(If you want one free theme preset as teaser: keep “Default” free, everything else pro — but you decide. If not specified, lock all customization.)
 
-B) App: tighten the two summary columns layout (pee/poop)
+2) Add a single source of truth: isPro
 
-Goal: match widget style + cleaner alignment.
+Create a small Pro state module that can be used everywhere.
 
-In the summary cards/columns (the ones showing icon + “PEE/POOP” + number + last time):
+Requirements
 
-Put number inline next to icon/text (like widget now).
+isPro resolves from:
 
-Example row: [icon] PEE 38
+Real purchase state (store)
 
-Keep last time below, centered.
+OR dev override toggle (dev only)
 
-Center alignment
+Persist isPro locally so app doesn’t flicker on launch.
 
-Center the whole block inside each card/column.
+Provide:
 
-Ensure both columns visually match height/spacing.
+usePro() hook returning { isPro, isLoading, purchase(), restore(), error }
 
-C) Widget: change tap behavior (card tap adds; home opens app)
+requirePro(action) helper that either runs action() or opens paywall
 
-Goal: bigger tap targets, fewer accidental adds while trying to open.
+3) Billing implementation (lifetime)
+Platform
 
-Make each event “card”/panel the tap target
+Android billing via a standard RN billing library already compatible with Expo dev client / prebuild (use whatever is already installed in repo; if none, add one and wire cleanly).
 
-Left card tap → add pee
+Product
 
-Right card tap → add poop
+One-time lifetime unlock (non-consumable)
 
-Remove click handlers from inner views
+Product ID e.g. pro_lifetime (match Play Console later)
 
-Icon/number/+ should be purely visual (no pendingIntent attached)
+Purchase flow
 
-Only the card container root for each side has the add pendingIntent
+purchase() triggers purchase
 
-Home icon behavior
+On success:
 
-Home icon tap → open app
+store entitlement locally (isPro = true)
 
-Ensure home icon area is clearly separate from cards (so taps don’t trigger add)
+update UI immediately
 
-Test
+On restore:
 
-Tap on empty space inside the card should add (intended)
+query purchases / available purchases
 
-Tapping home never increments counts
+if entitlement found → set isPro = true
 
-Tapping near borders doesn’t “leak” to wrong action
+Important
 
-D) Settings: replace opacity buttons with a slider + % label (if easy)
+Do not block app if billing fails.
 
-Do this if you can do it cleanly without fighting libs.
+If billing not available (dev), keep app functional with locked UI.
 
-Goal: user can pick any opacity, show exact %.
+4) Paywall screen
+Entry points
 
-Replace the 3 buttons (100/85/70) with a slider control.
+Any locked control or locked export button should open paywall.
 
-Range: 50% → 100% (or 40→100 if you prefer)
+Paywall content
 
-Step: 1% or 5% (1% feels nicer)
+Title: “Unlock Pro”
 
-Show a live label next to it:
+One-liner: “Lifetime unlock. Customize icons, themes, widget opacity, and export.”
 
-Opacity: 73% (updates as user drags)
+Bullet list:
 
-Persist value
+Widget customization (opacity)
 
-Save selected opacity to the same storage you’re already using for the buttons.
+Custom icons
 
-On app launch/settings load, slider reflects saved value.
+Theme presets
 
-Apply to widget
+Export to PDF/Text/CSV
 
-When value changes, update widget immediately (same update pathway you already built)
+Buttons:
 
-Ensure widget background alpha uses this percentage.
+Buy Lifetime (primary)
 
-If slider introduces dependency issues (RN slider lib mismatch etc.), revert to buttons and tell me; don’t half-implement.
+Restore Purchases (secondary)
+
+Show price if library supports it; otherwise omit price (don’t hardcode).
+
+Include small “Cancel” / back support.
+
+Navigation behavior
+
+After successful purchase or restore:
+
+Close paywall
+
+Return to the screen the user came from
+
+Previously locked action should work immediately (where reasonable)
+
+5) Gating the Settings screen
+Theme preset section
+
+If !isPro:
+
+show the theme options but disabled
+
+tapping anywhere in the section opens paywall
+
+show a small “Pro” badge or lock icon
+
+If isPro:
+
+fully interactive
+
+Icons / Privacy section
+
+Same as above: disabled for free, tap opens paywall.
+
+Widget opacity slider
+
+Keep slider visible
+
+If !isPro:
+
+disable the slider
+
+show current value (default)
+
+tapping slider area opens paywall
+
+6) Gating the Export screen
+Buttons
+
+Share PDF (Pro)
+
+Share Text (Pro)
+
+Share CSV (Pro)
+
+If !isPro:
+
+Buttons appear disabled + label includes “(Pro)” (already does)
+
+Tapping a disabled button should STILL open paywall (don’t do nothing).
+
+If isPro:
+
+Buttons run export actions.
+
+7) “Developer: Enable Pro (dev)” toggle
+Requirements
+
+Must NOT ship in production.
+
+Hide it behind a dev flag:
+
+__DEV__ only
+
+or build-time env var
+
+In dev:
+
+toggle sets a persisted devProOverride=true/false
+
+isPro = realEntitlement || devProOverride
+
+In production:
+
+dev section not rendered at all
+
+dev override ignored
+
+8) UX polish rules
+
+Locked controls should not feel broken:
+
+They must still respond with paywall open.
+
+Don’t spam paywall:
+
+If paywall already open, ignore repeated taps.
+
+Keep widget free:
+
+No paywall when interacting with widget basics.
+
+9) Testing checklist (Android emulator)
+
+Free user:
+
+App opens normally
+
+Widget works
+
+Settings: theme/icons/opacity show locked → tapping opens paywall
+
+Export: tapping locked buttons opens paywall
+
+Pro (dev toggle or purchase):
+
+All customization works
+
+Opacity changes update widget immediately
+
+Export actions run and share intents appear
+
+App relaunch retains Pro
+
+Restore:
+
+Simulate restore path (library dependent)
+
+Ensure UI updates
+
+10) Deliverable
+
+isPro state implemented + used everywhere
+
+Paywall screen
+
+Purchase + restore wired
+
+Settings + Export gating done
+
+Dev override works only in dev builds

@@ -24,6 +24,7 @@ const DEFAULT_PRO: ProState = {
 };
 
 const settingsListeners = new Set<SettingsListener>();
+const proStateListeners = new Set<(state: ProState) => void>();
 
 function safeParse<T>(raw: string | null): T | null {
   if (!raw) {
@@ -136,4 +137,12 @@ export async function loadProState(): Promise<ProState> {
 
 export async function saveProState(state: ProState): Promise<void> {
   await saveJson(BC_PRO, state);
+  proStateListeners.forEach((listener) => listener(state));
+}
+
+export function subscribeProState(listener: (state: ProState) => void): () => void {
+  proStateListeners.add(listener);
+  return () => {
+    proStateListeners.delete(listener);
+  };
 }

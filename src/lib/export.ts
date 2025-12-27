@@ -11,7 +11,7 @@ export type ExportSummary = {
 export function buildPlainText(events: BathroomEvent[], settings: AppSettings): string {
   return events
     .map((event) => {
-      const label = event.type === 'pee' ? 'Pee' : 'Poop';
+      const label = event.type === 'pee' ? 'Pee' : 'Poo';
       const icon = event.type === 'pee' ? settings.iconPee : settings.iconPoop;
       return `${formatDate(event.ts)} ${formatTime(event.ts, settings.timeFormat)} ${icon} ${label}`.trim();
     })
@@ -37,7 +37,7 @@ export function buildPdfHtml(
     .map((event) => {
       const date = formatDate(event.ts);
       const time = formatTime(event.ts, settings.timeFormat);
-      const label = event.type === 'pee' ? 'Pee' : 'Poop';
+      const label = event.type === 'pee' ? 'Pee' : 'Poo';
       return `<tr><td>${date}</td><td>${time}</td><td>${label}</td></tr>`;
     })
     .join('');
@@ -59,7 +59,7 @@ export function buildPdfHtml(
       <h1>Simple Bathroom Tracker Export</h1>
       <div class="summary">
         <div>Range: ${summary.rangeLabel}</div>
-        <div>Total: ${summary.total} (Pee ${summary.pee} / Poop ${summary.poop})</div>
+        <div>Total: ${summary.total} (Pee ${summary.pee} / Poo ${summary.poop})</div>
       </div>
       <table>
         <thead>

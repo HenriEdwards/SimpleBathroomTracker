@@ -40,7 +40,7 @@ const RANGE_OPTIONS: Array<{ id: RangeFilter; label: string }> = [
 const TYPE_OPTIONS: Array<{ id: TypeFilter; label: string }> = [
   { id: 'all', label: 'All' },
   { id: 'pee', label: 'Pee' },
-  { id: 'poop', label: 'Poop' },
+  { id: 'poop', label: 'Poo' },
 ];
 
 function startOfDay(ts: number): number {
@@ -238,7 +238,7 @@ export default function HomeScreen() {
 
   const actionLayout =
     width < 380 ? [styles.actionColumn, styles.actionCardFull] : [styles.actionRow, styles.actionCard];
-  const deleteTypeLabel = deleteCandidate?.type === 'pee' ? 'Pee' : 'Poop';
+  const deleteTypeLabel = deleteCandidate?.type === 'pee' ? 'Pee' : 'Poo';
   const deleteTimeLabel = deleteCandidate ? formatTime(deleteCandidate.ts, timeMode) : '';
   const deleteDateLabel = deleteCandidate ? formatDate(deleteCandidate.ts) : '';
 
@@ -284,7 +284,7 @@ export default function HomeScreen() {
               >
                 <View style={styles.actionHeaderRow}>
                   <Text style={styles.actionIcon}>{iconPoop}</Text>
-                  <Text style={[styles.actionLabel, { color: theme.colors.text }]}>POOP</Text>
+                  <Text style={[styles.actionLabel, { color: theme.colors.text }]}>POO</Text>
                   <Text style={[styles.actionCount, { color: theme.colors.primary }]}>{todayCounts.poop}</Text>
                 </View>
                 <Text style={[styles.actionMeta, { color: theme.colors.muted }]}>
@@ -366,7 +366,7 @@ export default function HomeScreen() {
               {formatTime(item.ts, timeMode)}
             </Text>
             <Text style={[styles.eventType, { color: theme.colors.text }]}>
-              {item.type === 'pee' ? iconPee : iconPoop} {item.type === 'pee' ? 'Pee' : 'Poop'}
+              {item.type === 'pee' ? iconPee : iconPoop} {item.type === 'pee' ? 'Pee' : 'Poo'}
             </Text>
             <Pressable
               onPress={() => handleDeleteEvent(item)}
