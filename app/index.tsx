@@ -3,9 +3,11 @@ import {
   AppState,
   AppStateStatus,
   FlatList,
+  Modal,
   Pressable,
   StyleSheet,
   Text,
+  useColorScheme,
   useWindowDimensions,
   View,
 } from 'react-native';
@@ -14,7 +16,7 @@ import { useFocusEffect } from '@react-navigation/native';
 
 import type { AppSettings, BathroomEvent, EventType } from '../src/types';
 import { appendEvent, loadEvents, loadSettings, saveEvents } from '../src/lib/storage';
-import { getTheme } from '../src/lib/theme';
+import { getTheme, resolveThemeMode } from '../src/lib/theme';
 import { formatDate, formatTime } from '../src/lib/time';
 import { DEFAULT_PEE_ICON, DEFAULT_POOP_ICON } from '../src/lib/icons';
 import {
@@ -91,8 +93,10 @@ export default function HomeScreen() {
   const { width } = useWindowDimensions();
   const [events, setEvents] = useState<BathroomEvent[]>([]);
   const [settings, setSettings] = useState<AppSettings | null>(null);
+  const [deleteCandidate, setDeleteCandidate] = useState<BathroomEvent | null>(null);
   const [rangeFilter, setRangeFilter] = useState<RangeFilter>('today');
   const [typeFilter, setTypeFilter] = useState<TypeFilter>('all');
+  const systemMode = useColorScheme();
   const isMountedRef = useRef(true);
   const isLoadingRef = useRef(false);
 
@@ -158,7 +162,8 @@ export default function HomeScreen() {
     };
   }, []);
 
-  const theme = getTheme(settings?.themeId ?? 't1');
+  const resolvedMode = resolveThemeMode(settings?.themeMode, systemMode);
+  const theme = getTheme({ presetId: settings?.themeId ?? 't1', mode: resolvedMode });
   const timeMode = settings?.timeFormat ?? '24h';
   const iconPee = settings?.iconPee ?? DEFAULT_PEE_ICON;
   const iconPoop = settings?.iconPoop ?? DEFAULT_POOP_ICON;
@@ -211,8 +216,31 @@ export default function HomeScreen() {
     setEvents((prev) => [next, ...prev]);
   };
 
+  const handleDeleteEvent = useCallback((event: BathroomEvent) => {
+    setDeleteCandidate(event);
+  }, []);
+
+  const handleCancelDelete = useCallback(() => {
+    setDeleteCandidate(null);
+  }, []);
+
+  const handleConfirmDelete = useCallback(() => {
+    if (!deleteCandidate) {
+      return;
+    }
+    setEvents((prev) => {
+      const next = prev.filter((item) => item.id !== deleteCandidate.id);
+      void saveEvents(next);
+      return next;
+    });
+    setDeleteCandidate(null);
+  }, [deleteCandidate]);
+
   const actionLayout =
     width < 380 ? [styles.actionColumn, styles.actionCardFull] : [styles.actionRow, styles.actionCard];
+  const deleteTypeLabel = deleteCandidate?.type === 'pee' ? 'Pee' : 'Poop';
+  const deleteTimeLabel = deleteCandidate ? formatTime(deleteCandidate.ts, timeMode) : '';
+  const deleteDateLabel = deleteCandidate ? formatDate(deleteCandidate.ts) : '';
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.bg }]}>
@@ -242,9 +270,11 @@ export default function HomeScreen() {
                 style={[actionLayout[1], { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}
                 onPress={() => handleLog('pee')}
               >
-                <Text style={styles.actionIcon}>{iconPee}</Text>
-                <Text style={[styles.actionLabel, { color: theme.colors.text }]}>Pee</Text>
-                <Text style={[styles.actionCount, { color: theme.colors.primary }]}>{todayCounts.pee}</Text>
+                <View style={styles.actionHeaderRow}>
+                  <Text style={styles.actionIcon}>{iconPee}</Text>
+                  <Text style={[styles.actionLabel, { color: theme.colors.text }]}>PEE</Text>
+                  <Text style={[styles.actionCount, { color: theme.colors.primary }]}>{todayCounts.pee}</Text>
+                </View>
                 <Text style={[styles.actionMeta, { color: theme.colors.muted }]}>
                   Last: {lastPee ? formatTime(lastPee.ts, timeMode) : '--'}
                 </Text>
@@ -253,9 +283,11 @@ export default function HomeScreen() {
                 style={[actionLayout[1], { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}
                 onPress={() => handleLog('poop')}
               >
-                <Text style={styles.actionIcon}>{iconPoop}</Text>
-                <Text style={[styles.actionLabel, { color: theme.colors.text }]}>Poop</Text>
-                <Text style={[styles.actionCount, { color: theme.colors.primary }]}>{todayCounts.poop}</Text>
+                <View style={styles.actionHeaderRow}>
+                  <Text style={styles.actionIcon}>{iconPoop}</Text>
+                  <Text style={[styles.actionLabel, { color: theme.colors.text }]}>POOP</Text>
+                  <Text style={[styles.actionCount, { color: theme.colors.primary }]}>{todayCounts.poop}</Text>
+                </View>
                 <Text style={[styles.actionMeta, { color: theme.colors.muted }]}>
                   Last: {lastPoop ? formatTime(lastPoop.ts, timeMode) : '--'}
                 </Text>
@@ -337,10 +369,65 @@ export default function HomeScreen() {
             <Text style={[styles.eventType, { color: theme.colors.text }]}>
               {item.type === 'pee' ? iconPee : iconPoop} {item.type === 'pee' ? 'Pee' : 'Poop'}
             </Text>
+            <Pressable
+              onPress={() => handleDeleteEvent(item)}
+              style={[styles.eventDelete, { borderColor: theme.colors.border }]}
+              hitSlop={8}
+            >
+              <Text style={[styles.eventDeleteText, { color: theme.colors.muted }]}>X</Text>
+            </Pressable>
           </View>
         )}
         contentContainerStyle={styles.listContent}
       />
+      <Modal
+        visible={Boolean(deleteCandidate)}
+        transparent
+        animationType="fade"
+        onRequestClose={handleCancelDelete}
+      >
+        <View style={styles.modalBackdrop}>
+          <Pressable style={StyleSheet.absoluteFill} onPress={handleCancelDelete} />
+          <View
+            style={[
+              styles.modalCard,
+              { backgroundColor: theme.colors.card, borderColor: theme.colors.border },
+            ]}
+          >
+            <Text style={[styles.modalTitle, { color: theme.colors.text }]}>Delete event?</Text>
+            <View style={styles.modalDetails}>
+              <Text style={[styles.modalDetailText, { color: theme.colors.text }]}>
+                Type: {deleteTypeLabel}
+              </Text>
+              <Text style={[styles.modalDetailText, { color: theme.colors.text }]}>
+                Time: {deleteTimeLabel}
+              </Text>
+              <Text style={[styles.modalDetailText, { color: theme.colors.text }]}>
+                Date: {deleteDateLabel}
+              </Text>
+            </View>
+            <View style={styles.modalButtons}>
+              <Pressable
+                style={[
+                  styles.modalSecondaryButton,
+                  { borderColor: theme.colors.border, backgroundColor: theme.colors.card },
+                ]}
+                onPress={handleCancelDelete}
+              >
+                <Text style={[styles.modalSecondaryText, { color: theme.colors.text }]}>Cancel</Text>
+              </Pressable>
+              <Pressable
+                style={[styles.modalPrimaryButton, { backgroundColor: theme.colors.primary }]}
+                onPress={handleConfirmDelete}
+              >
+                <Text style={[styles.modalPrimaryText, { color: theme.colors.primaryText }]}>
+                  Delete
+                </Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -383,6 +470,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     padding: 16,
     minHeight: 140,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   actionCardFull: {
     width: '100%',
@@ -390,23 +479,32 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     padding: 16,
     minHeight: 140,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   actionIcon: {
-    fontSize: 28,
+    fontSize: 24,
+  },
+  actionHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   actionLabel: {
-    marginTop: 8,
-    fontSize: 16,
-    fontWeight: '600',
+    marginLeft: 6,
+    fontSize: 14,
+    fontWeight: '700',
+    letterSpacing: 0.6,
   },
   actionCount: {
-    marginTop: 8,
-    fontSize: 28,
+    marginLeft: 8,
+    fontSize: 22,
     fontWeight: '700',
   },
   actionMeta: {
-    marginTop: 4,
+    marginTop: 6,
     fontSize: 12,
+    textAlign: 'center',
   },
   filtersSection: {
     gap: 8,
@@ -446,8 +544,68 @@ const styles = StyleSheet.create({
     fontSize: 14,
     flex: 1,
   },
+  eventDelete: {
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    alignSelf: 'center',
+  },
+  eventDeleteText: {
+    fontSize: 12,
+    fontWeight: '700',
+  },
   emptyState: {
     paddingVertical: 24,
     alignItems: 'center',
+  },
+  modalBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.35)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 24,
+  },
+  modalCard: {
+    width: '100%',
+    maxWidth: 360,
+    borderRadius: 16,
+    padding: 18,
+    borderWidth: 1,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+  },
+  modalDetails: {
+    marginTop: 12,
+    gap: 6,
+  },
+  modalDetailText: {
+    fontSize: 14,
+  },
+  modalButtons: {
+    marginTop: 16,
+    flexDirection: 'row',
+    gap: 8,
+  },
+  modalSecondaryButton: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 10,
+    alignItems: 'center',
+    borderWidth: 1,
+  },
+  modalSecondaryText: {
+    fontWeight: '600',
+  },
+  modalPrimaryButton: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  modalPrimaryText: {
+    fontWeight: '600',
   },
 });

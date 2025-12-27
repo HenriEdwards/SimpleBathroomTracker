@@ -1,52 +1,112 @@
-# Fix: Widget updates counts, but app UI only refreshes after restart
+Batch changes (App + Widget)
+A) App: delete an event from the list (with confirm)
 
-## Problem
-- Incrementing pee/poop via the **home-screen widget** updates the widget UI.
-- The **React Native app** does NOT reflect the new counts until the app is closed and reopened.
-- Incrementing inside the app updates the widget correctly.
+Goal: user can undo misclicks.
 
-## Root cause
-The app likely reads counts from shared storage only on initial mount / app launch.
-When the widget writes to shared storage, the app doesn’t re-read it.
+Add a delete (X) icon per event row in the events list UI (pee + poop lists).
 
-## Goal
-Whenever the app becomes active (foreground), re-load the counts from the same storage the widget uses and update app state.
+Put it on the far right of the row.
 
-## Required change (fast win)
-### 1) Add "refresh on foreground" in the app
-In the screen/component that owns the displayed counts (often Home screen or global store init):
+Keep row tap (if any) unchanged; only the X triggers delete.
 
-- Listen for app state changes with `AppState`.
-- When state changes to `active`, call the existing `loadCounts()` / `getCounts()` function used on startup and update state/store.
+On press X → show confirm modal
 
-Pseudo-logic:
-- On mount: loadCounts()
-- Subscribe to AppState:
-  - if nextState === 'active' => loadCounts()
-- Cleanup subscription on unmount.
+Title: Delete event?
 
-### 2) Also refresh on navigation focus (if using React Navigation)
-If the app uses React Navigation, also refresh when the screen is focused:
-- `useFocusEffect` or `navigation.addListener('focus', ...)`
-- On focus: loadCounts()
+Body should include:
 
-This ensures: user taps widget -> app opens -> counts refresh immediately.
+Event type (Pee/Poop)
 
-## Notes
-- Do NOT rebuild native for this; JS change is enough (unless native module changed).
-- Keep it debounced (optional): if multiple AppState events fire, guard with a simple flag/timestamp.
+Event time (formatted same as list)
 
-## Optional "best" upgrade (true live update even while app is open)
-If we want the app to update instantly while it is already open (no background/foreground), implement a broadcast/event bridge:
+(Optional) date too if you already show it
 
-- Widget sends a broadcast Intent like: `com.anonymous.BathroomCounter.WIDGET_UPDATED`
-- Native receiver forwards to JS (DeviceEventEmitter / expo-modules event)
-- App subscribes and triggers loadCounts()
+Buttons: Cancel (default) and Delete (destructive)
 
-But implement the foreground refresh first (cheap and solves the main pain).
+On confirm Delete
 
-## Acceptance test
-1) Open app, leave it running.
-2) Go home, tap widget +1 pee.
-3) Tap app icon to return.
-✅ Count updates immediately without killing the app.
+Remove from storage/db
+
+Refresh list immediately
+
+Recalculate counts + “last time”
+
+Trigger widget refresh (same mechanism you already use when adding events)
+
+B) App: tighten the two summary columns layout (pee/poop)
+
+Goal: match widget style + cleaner alignment.
+
+In the summary cards/columns (the ones showing icon + “PEE/POOP” + number + last time):
+
+Put number inline next to icon/text (like widget now).
+
+Example row: [icon] PEE 38
+
+Keep last time below, centered.
+
+Center alignment
+
+Center the whole block inside each card/column.
+
+Ensure both columns visually match height/spacing.
+
+C) Widget: change tap behavior (card tap adds; home opens app)
+
+Goal: bigger tap targets, fewer accidental adds while trying to open.
+
+Make each event “card”/panel the tap target
+
+Left card tap → add pee
+
+Right card tap → add poop
+
+Remove click handlers from inner views
+
+Icon/number/+ should be purely visual (no pendingIntent attached)
+
+Only the card container root for each side has the add pendingIntent
+
+Home icon behavior
+
+Home icon tap → open app
+
+Ensure home icon area is clearly separate from cards (so taps don’t trigger add)
+
+Test
+
+Tap on empty space inside the card should add (intended)
+
+Tapping home never increments counts
+
+Tapping near borders doesn’t “leak” to wrong action
+
+D) Settings: replace opacity buttons with a slider + % label (if easy)
+
+Do this if you can do it cleanly without fighting libs.
+
+Goal: user can pick any opacity, show exact %.
+
+Replace the 3 buttons (100/85/70) with a slider control.
+
+Range: 50% → 100% (or 40→100 if you prefer)
+
+Step: 1% or 5% (1% feels nicer)
+
+Show a live label next to it:
+
+Opacity: 73% (updates as user drags)
+
+Persist value
+
+Save selected opacity to the same storage you’re already using for the buttons.
+
+On app launch/settings load, slider reflects saved value.
+
+Apply to widget
+
+When value changes, update widget immediately (same update pathway you already built)
+
+Ensure widget background alpha uses this percentage.
+
+If slider introduces dependency issues (RN slider lib mismatch etc.), revert to buttons and tell me; don’t half-implement.

@@ -1,6 +1,6 @@
 import { Modal, Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 
-import type { ThemePreset } from '../lib/theme';
+import type { Theme } from '../lib/theme';
 
 type IconPickerModalProps = {
   visible: boolean;
@@ -9,7 +9,7 @@ type IconPickerModalProps = {
   options: string[];
   onSelect: (icon: string) => void;
   onClose: () => void;
-  theme: ThemePreset;
+  theme: Theme;
 };
 
 export default function IconPickerModal({

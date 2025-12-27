@@ -5,7 +5,14 @@ import type { AppSettings, BathroomEvent } from '../types';
 type WidgetBridgeModule = {
   getQueuedEvents: () => Promise<string>;
   clearQueuedEvents: () => Promise<void>;
-  setWidgetSettingsMirror?: (iconPee: string, iconPoop: string, themeId: string) => Promise<void>;
+  setWidgetSettingsMirror?: (
+    iconPee: string,
+    iconPoop: string,
+    themeId: string,
+    themeMode: string,
+    widgetOpacity: number,
+    timeFormat: string
+  ) => Promise<void>;
   setWidgetSummary?: (
     todayDate: string,
     peeCount: number,
@@ -75,7 +82,17 @@ export async function mirrorWidgetSettings(settings: AppSettings): Promise<void>
   if (!widgetBridge?.setWidgetSettingsMirror) {
     return;
   }
-  await widgetBridge.setWidgetSettingsMirror(settings.iconPee, settings.iconPoop, settings.themeId);
+  const themeMode = settings.themeMode ?? 'system';
+  const widgetOpacity = settings.widgetOpacity ?? 1;
+  const timeFormat = settings.timeFormat ?? '24h';
+  await widgetBridge.setWidgetSettingsMirror(
+    settings.iconPee,
+    settings.iconPoop,
+    settings.themeId,
+    themeMode,
+    widgetOpacity,
+    timeFormat
+  );
 }
 
 export async function mirrorWidgetSummary(events: BathroomEvent[]): Promise<void> {

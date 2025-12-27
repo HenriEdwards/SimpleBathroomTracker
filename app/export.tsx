@@ -5,6 +5,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  useColorScheme,
   View,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
@@ -16,7 +17,7 @@ import UpgradeModal from '../components/upgrade-modal';
 import type { AppSettings, BathroomEvent, EventType, ProState } from '../src/types';
 import { loadEvents, loadProState, loadSettings } from '../src/lib/storage';
 import { getEffectivePro, setDevProOverride } from '../src/lib/pro';
-import { getTheme } from '../src/lib/theme';
+import { getTheme, resolveThemeMode } from '../src/lib/theme';
 import { buildCSV, buildPdfHtml, buildPlainText } from '../src/lib/export';
 
 type RangeFilter = 'today' | 'week' | 'month' | 'year' | 'all';
@@ -89,6 +90,7 @@ export default function ExportScreen() {
   const [typeFilter, setTypeFilter] = useState<TypeFilter>('all');
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [busy, setBusy] = useState(false);
+  const systemMode = useColorScheme();
 
   useFocusEffect(
     useCallback(() => {
@@ -113,7 +115,8 @@ export default function ExportScreen() {
     }, [])
   );
 
-  const theme = getTheme(settings?.themeId ?? 't1');
+  const resolvedMode = resolveThemeMode(settings?.themeMode, systemMode);
+  const theme = getTheme({ presetId: settings?.themeId ?? 't1', mode: resolvedMode });
   const isPro = proState ? getEffectivePro(proState) : false;
 
   const filteredEvents = useMemo(() => {
@@ -323,6 +326,7 @@ export default function ExportScreen() {
         visible={showUpgrade}
         isPro={isPro}
         showDevToggle={__DEV__}
+        theme={theme}
         onClose={() => setShowUpgrade(false)}
         onEnableDevPro={async () => {
           await setDevProOverride(true);

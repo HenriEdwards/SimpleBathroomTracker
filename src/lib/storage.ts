@@ -10,6 +10,8 @@ const BC_PRO = 'BC_PRO';
 const DEFAULT_SETTINGS: AppSettings = {
   timeFormat: '24h',
   themeId: 't1',
+  themeMode: 'system',
+  widgetOpacity: 1,
   iconPee: DEFAULT_PEE_ICON,
   iconPoop: DEFAULT_POOP_ICON,
 };
@@ -75,9 +77,18 @@ export async function loadSettings(): Promise<AppSettings> {
   if (!stored) {
     return DEFAULT_SETTINGS;
   }
+  const themeMode =
+    stored.themeMode === 'light' || stored.themeMode === 'dark' || stored.themeMode === 'system'
+      ? stored.themeMode
+      : DEFAULT_SETTINGS.themeMode;
+  const rawOpacity =
+    typeof stored.widgetOpacity === 'number' ? stored.widgetOpacity : DEFAULT_SETTINGS.widgetOpacity;
+  const widgetOpacity = Math.min(1, Math.max(0.5, rawOpacity));
   const normalized: AppSettings = {
     timeFormat: stored.timeFormat === '12h' ? '12h' : '24h',
     themeId: stored.themeId ?? 't1',
+    themeMode,
+    widgetOpacity,
     iconPee: stored.iconPee ?? DEFAULT_PEE_ICON,
     iconPoop: stored.iconPoop ?? DEFAULT_POOP_ICON,
   };

@@ -1,85 +1,109 @@
 export type ThemePreset = {
   id: 't1' | 't2' | 't3' | 't4' | 't5';
   name: string;
+  accent: string;
+  accentText: string;
+};
+
+export type ThemeMode = 'light' | 'dark';
+export type ThemeModePreference = ThemeMode | 'system';
+
+export type Theme = {
+  id: ThemePreset['id'];
+  name: string;
+  mode: ThemeMode;
   colors: {
     bg: string;
     card: string;
     text: string;
     muted: string;
+    mutedText: string;
+    border: string;
     primary: string;
     primaryText: string;
-    border: string;
+    accent: string;
+    accentText: string;
   };
+};
+
+const BASE_COLORS: Record<ThemeMode, Omit<Theme['colors'], 'primary' | 'primaryText' | 'accent' | 'accentText'>> = {
+  light: {
+    bg: '#F6F2EC',
+    card: '#FFFFFF',
+    text: '#2A2622',
+    muted: '#6E655E',
+    mutedText: '#6E655E',
+    border: '#E2DBD2',
+  },
+  dark: {
+    bg: '#15110E',
+    card: '#1F1B18',
+    text: '#F3EDE6',
+    muted: '#B2AAA3',
+    mutedText: '#B2AAA3',
+    border: '#2E2723',
+  },
 };
 
 export const THEME_PRESETS: ThemePreset[] = [
   {
     id: 't1',
     name: 'Linen',
-    colors: {
-      bg: '#F6F2EC',
-      card: '#FFFFFF',
-      text: '#2A2622',
-      muted: '#6E655E',
-      primary: '#4E7F6C',
-      primaryText: '#FFFFFF',
-      border: '#E2DBD2',
-    },
+    accent: '#4E7F6C',
+    accentText: '#FFFFFF',
   },
   {
     id: 't2',
     name: 'Lake',
-    colors: {
-      bg: '#EEF5F8',
-      card: '#FFFFFF',
-      text: '#1F2A33',
-      muted: '#5E6C75',
-      primary: '#2C6B8F',
-      primaryText: '#FFFFFF',
-      border: '#D7E3EA',
-    },
+    accent: '#2C6B8F',
+    accentText: '#FFFFFF',
   },
   {
     id: 't3',
     name: 'Citrus',
-    colors: {
-      bg: '#FFF6E8',
-      card: '#FFFFFF',
-      text: '#2C2218',
-      muted: '#7A6A58',
-      primary: '#F28C28',
-      primaryText: '#FFFFFF',
-      border: '#F1E1CE',
-    },
+    accent: '#F28C28',
+    accentText: '#FFFFFF',
   },
   {
     id: 't4',
     name: 'Slate',
-    colors: {
-      bg: '#F1F3F5',
-      card: '#FFFFFF',
-      text: '#1F242A',
-      muted: '#5C646E',
-      primary: '#3E566E',
-      primaryText: '#FFFFFF',
-      border: '#D9DEE3',
-    },
+    accent: '#3E566E',
+    accentText: '#FFFFFF',
   },
   {
     id: 't5',
     name: 'Forest',
-    colors: {
-      bg: '#EFF5EF',
-      card: '#FFFFFF',
-      text: '#1C2B22',
-      muted: '#5C6A62',
-      primary: '#2F6B3F',
-      primaryText: '#FFFFFF',
-      border: '#D8E2D8',
-    },
+    accent: '#2F6B3F',
+    accentText: '#FFFFFF',
   },
 ];
 
-export function getTheme(themeId: ThemePreset['id']): ThemePreset {
-  return THEME_PRESETS.find((theme) => theme.id === themeId) ?? THEME_PRESETS[0];
+export function resolveThemeMode(
+  preference: ThemeModePreference | undefined,
+  systemMode: ThemeMode | null | undefined
+): ThemeMode {
+  if (preference === 'light' || preference === 'dark') {
+    return preference;
+  }
+  if (preference === 'system' || !preference) {
+    return systemMode === 'dark' ? 'dark' : 'light';
+  }
+  return 'light';
+}
+
+export function getTheme(options: { presetId: ThemePreset['id']; mode: ThemeMode }): Theme {
+  const preset = THEME_PRESETS.find((theme) => theme.id === options.presetId) ?? THEME_PRESETS[0];
+  const base = BASE_COLORS[options.mode] ?? BASE_COLORS.light;
+  return {
+    id: preset.id,
+    name: preset.name,
+    mode: options.mode,
+    colors: {
+      ...base,
+      primary: preset.accent,
+      primaryText: preset.accentText,
+      accent: preset.accent,
+      accentText: preset.accentText,
+    },
+  };
 }

@@ -1,11 +1,14 @@
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 
+import type { Theme } from '../src/lib/theme';
+
 type UpgradeModalProps = {
   visible: boolean;
   isPro: boolean;
   showDevToggle: boolean;
   onClose: () => void;
   onEnableDevPro?: () => void;
+  theme: Theme;
 };
 
 export default function UpgradeModal({
@@ -14,35 +17,51 @@ export default function UpgradeModal({
   showDevToggle,
   onClose,
   onEnableDevPro,
+  theme,
 }: UpgradeModalProps) {
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <View style={styles.backdrop}>
-        <View style={styles.card}>
-          <Text style={styles.title}>Pro Upgrade</Text>
-          <Text style={styles.subtitle}>
+        <View style={[styles.card, { backgroundColor: theme.colors.card }]}>
+          <Text style={[styles.title, { color: theme.colors.text }]}>Pro Upgrade</Text>
+          <Text style={[styles.subtitle, { color: theme.colors.muted }]}>
             {isPro ? 'Pro is already unlocked.' : 'Unlock these benefits:'}
           </Text>
           <View style={styles.list}>
-            <Text style={styles.listItem}>- Export (PDF/Text/CSV)</Text>
-            <Text style={styles.listItem}>- Home Widget (coming later)</Text>
-            <Text style={styles.listItem}>- Theme presets</Text>
-            <Text style={styles.listItem}>- Incognito icons</Text>
+            <Text style={[styles.listItem, { color: theme.colors.text }]}>
+              - Export (PDF/Text/CSV)
+            </Text>
+            <Text style={[styles.listItem, { color: theme.colors.text }]}>
+              - Home Widget (coming later)
+            </Text>
+            <Text style={[styles.listItem, { color: theme.colors.text }]}>- Theme presets</Text>
+            <Text style={[styles.listItem, { color: theme.colors.text }]}>- Incognito icons</Text>
           </View>
           {showDevToggle && !isPro ? (
             <>
-              <Text style={styles.notice}>Coming soon. Dev builds can unlock now.</Text>
+              <Text style={[styles.notice, { color: theme.colors.muted }]}>
+                Coming soon. Dev builds can unlock now.
+              </Text>
               <Pressable
-                style={styles.primaryButton}
+                style={[styles.primaryButton, { backgroundColor: theme.colors.primary }]}
                 onPress={onEnableDevPro}
                 accessibilityRole="button"
               >
-                <Text style={styles.primaryButtonText}>Enable Pro (dev)</Text>
+                <Text style={[styles.primaryButtonText, { color: theme.colors.primaryText }]}>
+                  Enable Pro (dev)
+                </Text>
               </Pressable>
             </>
           ) : null}
-          <Pressable style={styles.secondaryButton} onPress={onClose} accessibilityRole="button">
-            <Text style={styles.secondaryButtonText}>Close</Text>
+          <Pressable
+            style={[
+              styles.secondaryButton,
+              { borderColor: theme.colors.border, backgroundColor: theme.colors.card },
+            ]}
+            onPress={onClose}
+            accessibilityRole="button"
+          >
+            <Text style={[styles.secondaryButtonText, { color: theme.colors.text }]}>Close</Text>
           </Pressable>
         </View>
       </View>
@@ -61,19 +80,16 @@ const styles = StyleSheet.create({
   card: {
     width: '100%',
     maxWidth: 420,
-    backgroundColor: '#FFFFFF',
     borderRadius: 16,
     padding: 20,
   },
   title: {
     fontSize: 20,
     fontWeight: '700',
-    color: '#1F242A',
   },
   subtitle: {
     marginTop: 8,
     fontSize: 14,
-    color: '#5C646E',
   },
   list: {
     marginTop: 16,
@@ -81,22 +97,18 @@ const styles = StyleSheet.create({
   },
   listItem: {
     fontSize: 14,
-    color: '#1F242A',
   },
   notice: {
     marginTop: 16,
     fontSize: 12,
-    color: '#5C646E',
   },
   primaryButton: {
     marginTop: 12,
-    backgroundColor: '#2C6B8F',
     borderRadius: 10,
     paddingVertical: 12,
     alignItems: 'center',
   },
   primaryButtonText: {
-    color: '#FFFFFF',
     fontWeight: '600',
   },
   secondaryButton: {
@@ -104,10 +116,9 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     paddingVertical: 12,
     alignItems: 'center',
-    backgroundColor: '#EEF1F4',
+    borderWidth: 1,
   },
   secondaryButtonText: {
-    color: '#2E3A45',
     fontWeight: '600',
   },
 });

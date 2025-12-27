@@ -6,8 +6,10 @@ import {
   StyleSheet,
   Switch,
   Text,
+  useColorScheme,
   View,
 } from 'react-native';
+import Slider from '@react-native-community/slider';
 import { useFocusEffect } from '@react-navigation/native';
 
 import UpgradeModal from '../components/upgrade-modal';
@@ -15,13 +17,15 @@ import IconPickerModal from '../src/components/IconPickerModal';
 import type { AppSettings, ProState } from '../src/types';
 import { loadProState, loadSettings, saveSettings, clearAllEvents } from '../src/lib/storage';
 import { getEffectivePro, setDevProOverride } from '../src/lib/pro';
-import { getTheme, THEME_PRESETS } from '../src/lib/theme';
+import { getTheme, resolveThemeMode, THEME_PRESETS } from '../src/lib/theme';
 import { DEFAULT_PEE_ICON, DEFAULT_POOP_ICON, ICON_PRESETS, isValidIcon } from '../src/lib/icons';
 import { mirrorWidgetSettings } from '../src/lib/widget-bridge';
 
 const DEFAULT_SETTINGS: AppSettings = {
   timeFormat: '24h',
   themeId: 't1',
+  themeMode: 'system',
+  widgetOpacity: 1,
   iconPee: DEFAULT_PEE_ICON,
   iconPoop: DEFAULT_POOP_ICON,
 };
@@ -31,6 +35,7 @@ export default function SettingsScreen() {
   const [proState, setProState] = useState<ProState | null>(null);
   const [showUpgrade, setShowUpgrade] = useState(false);
   const [activePicker, setActivePicker] = useState<'pee' | 'poop' | null>(null);
+  const systemMode = useColorScheme();
 
   useFocusEffect(
     useCallback(() => {
@@ -51,15 +56,35 @@ export default function SettingsScreen() {
     }, [])
   );
 
-  const theme = getTheme(settings?.themeId ?? 't1');
+  const resolvedMode = resolveThemeMode(settings?.themeMode, systemMode);
+  const theme = getTheme({ presetId: settings?.themeId ?? 't1', mode: resolvedMode });
   const isPro = proState ? getEffectivePro(proState) : false;
   const iconPee = settings?.iconPee ?? DEFAULT_PEE_ICON;
   const iconPoop = settings?.iconPoop ?? DEFAULT_POOP_ICON;
+  const widgetOpacity = settings?.widgetOpacity ?? 1;
 
   const updateSettings = async (next: AppSettings) => {
     setSettings(next);
     await saveSettings(next);
     await mirrorWidgetSettings(next);
+  };
+
+  const handleOpacityChange = (value: number) => {
+    if (!settings) {
+      return;
+    }
+    const clamped = Math.min(1, Math.max(0.5, value));
+    const next = { ...settings, widgetOpacity: clamped };
+    setSettings(next);
+    void mirrorWidgetSettings(next);
+  };
+
+  const handleOpacityComplete = async (value: number) => {
+    if (!settings) {
+      return;
+    }
+    const clamped = Math.min(1, Math.max(0.5, value));
+    await updateSettings({ ...settings, widgetOpacity: clamped });
   };
 
   const handleIconSelect = async (icon: string) => {
@@ -105,6 +130,31 @@ export default function SettingsScreen() {
       <ScrollView contentContainerStyle={styles.content}>
         <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Appearance</Text>
         <View style={[styles.card, { backgroundColor: theme.colors.card }]}>
+          <Text style={[styles.label, { color: theme.colors.text }]}>Mode</Text>
+          <View style={styles.segmentedRow}>
+            {(['light', 'dark'] as const).map((mode) => {
+              const active = resolvedMode === mode;
+              return (
+                <Pressable
+                  key={mode}
+                  onPress={() =>
+                    settings ? updateSettings({ ...settings, themeMode: mode }) : null
+                  }
+                  style={[
+                    styles.segmentButton,
+                    {
+                      backgroundColor: active ? theme.colors.primary : theme.colors.card,
+                      borderColor: theme.colors.border,
+                    },
+                  ]}
+                >
+                  <Text style={{ color: active ? theme.colors.primaryText : theme.colors.text }}>
+                    {mode === 'light' ? 'Light' : 'Dark'}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
           <Text style={[styles.label, { color: theme.colors.text }]}>Theme preset</Text>
           {THEME_PRESETS.map((preset) => {
             const active = settings?.themeId === preset.id;
@@ -128,6 +178,25 @@ export default function SettingsScreen() {
               </Pressable>
             );
           })}
+          <Text style={[styles.label, { color: theme.colors.text }]}>Widget opacity</Text>
+          <View style={styles.opacityRow}>
+            <Slider
+              style={styles.opacitySlider}
+              minimumValue={0.5}
+              maximumValue={1}
+              step={0.01}
+              value={widgetOpacity}
+              minimumTrackTintColor={theme.colors.primary}
+              maximumTrackTintColor={theme.colors.border}
+              thumbTintColor={theme.colors.primary}
+              onValueChange={handleOpacityChange}
+              onSlidingComplete={handleOpacityComplete}
+              disabled={!settings}
+            />
+            <Text style={[styles.opacityValue, { color: theme.colors.text }]}>
+              Opacity: {Math.round(widgetOpacity * 100)}%
+            </Text>
+          </View>
           <Text style={[styles.label, { color: theme.colors.text }]}>Time format</Text>
           <View style={styles.segmentedRow}>
             {(['24h', '12h'] as const).map((value) => {
@@ -256,6 +325,7 @@ export default function SettingsScreen() {
         visible={showUpgrade}
         isPro={isPro}
         showDevToggle={__DEV__}
+        theme={theme}
         onClose={() => setShowUpgrade(false)}
         onEnableDevPro={async () => {
           await setDevProOverride(true);
@@ -301,6 +371,19 @@ const styles = StyleSheet.create({
   segmentedRow: {
     flexDirection: 'row',
     gap: 8,
+  },
+  opacityRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  opacitySlider: {
+    flex: 1,
+    height: 36,
+  },
+  opacityValue: {
+    fontSize: 13,
+    fontWeight: '600',
   },
   segmentButton: {
     flex: 1,
