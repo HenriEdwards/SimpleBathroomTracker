@@ -1,5 +1,5 @@
 export type ThemePreset = {
-  id: 't1' | 't2' | 't3' | 't4' | 't5';
+  id: 't1' | 't2' | 't3' | 't4' | 't5' | 't_peachy';
   name: string;
   accent: string;
   accentText: string;
@@ -74,6 +74,12 @@ export const THEME_PRESETS: ThemePreset[] = [
     id: 't5',
     name: 'Forest',
     accent: '#2F6B3F',
+    accentText: '#FFFFFF',
+  },
+  {
+    id: 't_peachy',
+    name: 'Dreams',
+    accent: '#E84A8A',
     accentText: '#FFFFFF',
   },
 ];

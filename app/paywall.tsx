@@ -79,7 +79,7 @@ export default function PaywallScreen() {
             <Text style={[styles.listItem, { color: theme.colors.text }]}>• Custom icons</Text>
             <Text style={[styles.listItem, { color: theme.colors.text }]}>• Theme presets</Text>
             <Text style={[styles.listItem, { color: theme.colors.text }]}>
-              • Export to PDF/Text/CSV
+              • Export to PDF
             </Text>
           </View>
 

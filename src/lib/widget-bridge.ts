@@ -1,6 +1,8 @@
 import { NativeModules, Platform } from 'react-native';
 
 import type { AppSettings, BathroomEvent } from '../types';
+import { getTheme } from './theme';
+import type { ThemeMode } from './theme';
 
 type WidgetBridgeModule = {
   getQueuedEvents: () => Promise<string>;
@@ -11,7 +13,11 @@ type WidgetBridgeModule = {
     themeId: string,
     themeMode: string,
     widgetOpacity: number,
-    timeFormat: string
+    timeFormat: string,
+    bgColor: string,
+    textColor: string,
+    mutedColor: string,
+    accentColor: string
   ) => Promise<void>;
   setWidgetSummary?: (
     todayDate: string,
@@ -78,20 +84,28 @@ export async function clearQueuedWidgetEvents(): Promise<void> {
   await widgetBridge.clearQueuedEvents();
 }
 
-export async function mirrorWidgetSettings(settings: AppSettings): Promise<void> {
+export async function mirrorWidgetSettings(
+  settings: AppSettings,
+  resolvedMode?: ThemeMode
+): Promise<void> {
   if (!widgetBridge?.setWidgetSettingsMirror) {
     return;
   }
-  const themeMode = settings.themeMode ?? 'system';
+  const themeMode = resolvedMode ?? (settings.themeMode === 'dark' ? 'dark' : 'light');
   const widgetOpacity = settings.widgetOpacity ?? 1;
   const timeFormat = settings.timeFormat ?? '24h';
+  const theme = getTheme({ presetId: settings.themeId ?? 't1', mode: themeMode });
   await widgetBridge.setWidgetSettingsMirror(
     settings.iconPee,
     settings.iconPoop,
     settings.themeId,
     themeMode,
     widgetOpacity,
-    timeFormat
+    timeFormat,
+    theme.colors.card,
+    theme.colors.text,
+    theme.colors.muted,
+    theme.colors.primary
   );
 }
 

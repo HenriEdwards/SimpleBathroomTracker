@@ -1,6 +1,8 @@
 import { useCallback, useState } from 'react';
 import {
   Alert,
+  Linking,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -11,14 +13,16 @@ import {
 } from 'react-native';
 import Slider from '@react-native-community/slider';
 import { useFocusEffect } from '@react-navigation/native';
+import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
+import { useRouter } from 'expo-router';
 
 import IconPickerModal from '../src/components/IconPickerModal';
-import type { AppSettings } from '../src/types';
-import { loadSettings, saveSettings, clearAllEvents } from '../src/lib/storage';
+import type { AppSettings, BathroomEvent } from '../src/types';
+import { loadEvents, loadSettings, saveEvents, saveSettings, clearAllEvents } from '../src/lib/storage';
 import { setDevProOverride, usePro } from '../src/lib/pro';
 import { getTheme, resolveThemeMode, THEME_PRESETS } from '../src/lib/theme';
 import { DEFAULT_PEE_ICON, DEFAULT_POOP_ICON, ICON_PRESETS, isValidIcon } from '../src/lib/icons';
-import { mirrorWidgetSettings } from '../src/lib/widget-bridge';
+import { mirrorWidgetSettings, mirrorWidgetSummary } from '../src/lib/widget-bridge';
 import { usePaywall } from '../src/lib/paywall';
 
 const DEFAULT_SETTINGS: AppSettings = {
@@ -30,12 +34,90 @@ const DEFAULT_SETTINGS: AppSettings = {
   iconPoop: DEFAULT_POOP_ICON,
 };
 
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
+const SEED_CONFIG = {
+  days: 90,
+  minTotal: 300,
+  maxTotal: 600,
+  minPerDay: 2,
+  maxPerDay: 10,
+  peeRatio: 0.85,
+};
+
+function randomInt(min: number, max: number): number {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function buildDailyCounts(days: number): number[] {
+  const counts = Array.from({ length: days }, () =>
+    randomInt(SEED_CONFIG.minPerDay, SEED_CONFIG.maxPerDay)
+  );
+  let total = counts.reduce((sum, value) => sum + value, 0);
+  if (total > SEED_CONFIG.maxTotal) {
+    let excess = total - SEED_CONFIG.maxTotal;
+    while (excess > 0) {
+      const index = randomInt(0, counts.length - 1);
+      if (counts[index] > SEED_CONFIG.minPerDay) {
+        counts[index] -= 1;
+        excess -= 1;
+      }
+    }
+  } else if (total < SEED_CONFIG.minTotal) {
+    let deficit = SEED_CONFIG.minTotal - total;
+    while (deficit > 0) {
+      const index = randomInt(0, counts.length - 1);
+      if (counts[index] < SEED_CONFIG.maxPerDay) {
+        counts[index] += 1;
+        deficit -= 1;
+      }
+    }
+  }
+  total = counts.reduce((sum, value) => sum + value, 0);
+  if (total > SEED_CONFIG.maxTotal) {
+    while (total > SEED_CONFIG.maxTotal) {
+      const index = randomInt(0, counts.length - 1);
+      if (counts[index] > SEED_CONFIG.minPerDay) {
+        counts[index] -= 1;
+        total -= 1;
+      }
+    }
+  }
+  return counts;
+}
+
+function buildSeedEvents(now: number): BathroomEvent[] {
+  const counts = buildDailyCounts(SEED_CONFIG.days);
+  const events: BathroomEvent[] = [];
+  const dayStart = new Date(now);
+  dayStart.setHours(0, 0, 0, 0);
+  for (let day = 0; day < counts.length; day += 1) {
+    const baseTs = dayStart.getTime() - day * MS_PER_DAY;
+    for (let i = 0; i < counts[day]; i += 1) {
+      const earlySlot = Math.random() < 0.1;
+      const minutesWindow = earlySlot ? 6 * 60 : 17 * 60 + 30;
+      const offsetMinutes = earlySlot
+        ? randomInt(0, minutesWindow - 1)
+        : Math.floor(((Math.random() + Math.random()) / 2) * minutesWindow);
+      const minutesFromStart = earlySlot ? offsetMinutes : 6 * 60 + offsetMinutes;
+      const ts = baseTs + minutesFromStart * 60 * 1000 + randomInt(0, 59) * 1000;
+      events.push({
+        id: `seed-${ts}-${day}-${i}-${Math.random().toString(36).slice(2, 6)}`,
+        type: Math.random() < SEED_CONFIG.peeRatio ? 'pee' : 'poop',
+        ts,
+      });
+    }
+  }
+  return events.sort((a, b) => b.ts - a.ts);
+}
+
 export default function SettingsScreen() {
+  const router = useRouter();
   const [settings, setSettings] = useState<AppSettings | null>(null);
   const [activePicker, setActivePicker] = useState<'pee' | 'poop' | null>(null);
   const systemMode = useColorScheme();
   const { isPro, devProOverride } = usePro();
   const { openPaywall } = usePaywall();
+  const [seedBusy, setSeedBusy] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -46,13 +128,14 @@ export default function SettingsScreen() {
           return;
         }
         setSettings(loadedSettings);
-        await mirrorWidgetSettings(loadedSettings);
+        const resolvedMode = resolveThemeMode(loadedSettings?.themeMode, systemMode);
+        await mirrorWidgetSettings(loadedSettings, resolvedMode);
       };
       load();
       return () => {
         isActive = false;
       };
-    }, [])
+    }, [systemMode])
   );
 
   const resolvedMode = resolveThemeMode(settings?.themeMode, systemMode);
@@ -65,7 +148,8 @@ export default function SettingsScreen() {
   const updateSettings = async (next: AppSettings) => {
     setSettings(next);
     await saveSettings(next);
-    await mirrorWidgetSettings(next);
+    const resolvedMode = resolveThemeMode(next.themeMode, systemMode);
+    await mirrorWidgetSettings(next, resolvedMode);
   };
 
   const handleOpacityChange = (value: number) => {
@@ -75,7 +159,8 @@ export default function SettingsScreen() {
     const clamped = Math.min(1, Math.max(0.5, value));
     const next = { ...settings, widgetOpacity: clamped };
     setSettings(next);
-    void mirrorWidgetSettings(next);
+    const resolvedMode = resolveThemeMode(next.themeMode, systemMode);
+    void mirrorWidgetSettings(next, resolvedMode);
   };
 
   const handleOpacityComplete = async (value: number) => {
@@ -106,10 +191,70 @@ export default function SettingsScreen() {
         style: 'destructive',
         onPress: async () => {
           await clearAllEvents();
+          await mirrorWidgetSummary([]);
         },
       },
     ]);
   };
+
+  const applySeedEvents = useCallback(async (seeded: BathroomEvent[], mode: 'append' | 'replace') => {
+    try {
+      const existing = mode === 'append' ? await loadEvents() : [];
+      const next = mode === 'append' ? [...seeded, ...existing] : seeded;
+      next.sort((a, b) => b.ts - a.ts);
+      await saveEvents(next);
+      await mirrorWidgetSummary(next);
+      Alert.alert(mode === 'append' ? 'Added events' : 'Seeded events', `Seeded ${seeded.length} events.`);
+    } finally {
+      setSeedBusy(false);
+    }
+  }, []);
+
+  const handleSeedDemoData = useCallback(async () => {
+    if (!__DEV__ || seedBusy) {
+      return;
+    }
+    setSeedBusy(true);
+    const seeded = buildSeedEvents(Date.now());
+    try {
+      const existing = await loadEvents();
+      if (existing.length > 0) {
+        Alert.alert('Seed demo data', 'Append to or replace existing events?', [
+          {
+            text: 'Cancel',
+            style: 'cancel',
+            onPress: () => setSeedBusy(false),
+          },
+          {
+            text: 'Replace',
+            style: 'destructive',
+            onPress: () => {
+              void applySeedEvents(seeded, 'replace');
+            },
+          },
+          {
+            text: 'Append',
+            onPress: () => {
+              void applySeedEvents(seeded, 'append');
+            },
+          },
+        ]);
+        return;
+      }
+      await applySeedEvents(seeded, 'replace');
+    } catch {
+      setSeedBusy(false);
+    }
+  }, [applySeedEvents, seedBusy]);
+
+  const handleClearAndSeed = useCallback(async () => {
+    if (!__DEV__ || seedBusy) {
+      return;
+    }
+    setSeedBusy(true);
+    const seeded = buildSeedEvents(Date.now());
+    void applySeedEvents(seeded, 'replace');
+  }, [applySeedEvents, seedBusy]);
 
   const handleResetSettings = () => {
     Alert.alert('Reset settings?', 'This will restore defaults.', [
@@ -122,6 +267,57 @@ export default function SettingsScreen() {
         },
       },
     ]);
+  };
+
+  const handleRateApp = useCallback(async () => {
+    const packageId = 'com.anonymous.BathroomCounter';
+    const marketUrl = `market://details?id=${packageId}`;
+    const webUrl = `https://play.google.com/store/apps/details?id=${packageId}`;
+    const target = Platform.OS === 'android' ? marketUrl : webUrl;
+    try {
+      const supported = await Linking.canOpenURL(target);
+      await Linking.openURL(supported ? target : webUrl);
+    } catch {
+      Alert.alert('Unable to open the store right now.');
+    }
+  }, []);
+
+  const handleRequestFeature = useCallback(async () => {
+    const subject = 'Feature request - Simple Bathroom Tracker';
+    const body = 'Tell me about the feature you would like to see.';
+    const mailto = `mailto:henriedwards.work@gmail.com?subject=${encodeURIComponent(
+      subject
+    )}&body=${encodeURIComponent(body)}`;
+    try {
+      const supported = await Linking.canOpenURL(mailto);
+      if (!supported) {
+        Alert.alert('No email app available.');
+        return;
+      }
+      await Linking.openURL(mailto);
+    } catch {
+      Alert.alert('Unable to open the email app.');
+    }
+  }, []);
+
+  const handleOpenX = useCallback(async () => {
+    const handle = 'henriedev';
+    const appUrl = `twitter://user?screen_name=${handle}`;
+    const webUrl = `https://x.com/${handle}`;
+    try {
+      const supported = await Linking.canOpenURL(appUrl);
+      await Linking.openURL(supported ? appUrl : webUrl);
+    } catch {
+      Alert.alert('Unable to open the X profile.');
+    }
+  }, []);
+
+  const handleProPress = () => {
+    if (isPro) {
+      router.push('/pro-unlocked');
+      return;
+    }
+    openPaywall();
   };
 
   return (
@@ -316,9 +512,33 @@ export default function SettingsScreen() {
           </Text>
           <Pressable
             style={[styles.primaryButton, { backgroundColor: theme.colors.primary }]}
-            onPress={openPaywall}
+            onPress={handleProPress}
           >
-            <Text style={{ color: theme.colors.primaryText, fontWeight: '600' }}>Unlock Pro</Text>
+            <Text style={{ color: theme.colors.primaryText, fontWeight: '600' }}>
+              {isPro ? 'Pro Unlocked' : 'Unlock Pro'}
+            </Text>
+          </Pressable>
+        </View>
+
+        <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Feedback</Text>
+        <View style={[styles.card, { backgroundColor: theme.colors.card }]}>
+          <Pressable
+            style={[
+              styles.linkRow,
+              { borderColor: theme.colors.border, backgroundColor: theme.colors.card },
+            ]}
+            onPress={handleRateApp}
+          >
+            <Text style={[styles.label, { color: theme.colors.text }]}>Rate the app</Text>
+          </Pressable>
+          <Pressable
+            style={[
+              styles.linkRow,
+              { borderColor: theme.colors.border, backgroundColor: theme.colors.card },
+            ]}
+            onPress={handleRequestFeature}
+          >
+            <Text style={[styles.label, { color: theme.colors.text }]}>Request a feature</Text>
           </Pressable>
         </View>
 
@@ -335,6 +555,29 @@ export default function SettingsScreen() {
                   }}
                 />
               </View>
+              <Pressable
+                style={[
+                  styles.secondaryButton,
+                  { borderColor: theme.colors.border, opacity: seedBusy ? 0.6 : 1 },
+                ]}
+                onPress={handleSeedDemoData}
+                disabled={seedBusy}
+              >
+                <Text style={{ color: theme.colors.text }}>Seed demo data</Text>
+              </Pressable>
+              <Text style={[styles.devCaption, { color: theme.colors.muted }]}>
+                Generates realistic events across the past 90 days.
+              </Text>
+              <Pressable
+                style={[
+                  styles.secondaryButton,
+                  { borderColor: theme.colors.border, opacity: seedBusy ? 0.6 : 1 },
+                ]}
+                onPress={handleClearAndSeed}
+                disabled={seedBusy}
+              >
+                <Text style={{ color: theme.colors.text }}>Clear + Seed</Text>
+              </Pressable>
             </View>
           </>
         ) : null}
@@ -352,6 +595,22 @@ export default function SettingsScreen() {
             onPress={handleResetSettings}
           >
             <Text style={{ color: theme.colors.text }}>Reset settings</Text>
+          </Pressable>
+        </View>
+
+        <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Contact</Text>
+        <View style={[styles.card, { backgroundColor: theme.colors.card }]}>
+          <Pressable
+            style={[
+              styles.linkRow,
+              { borderColor: theme.colors.border, backgroundColor: theme.colors.card },
+            ]}
+            onPress={handleOpenX}
+          >
+            <View style={styles.linkRowLeft}>
+              <FontAwesome6 name="x-twitter" size={18} color={theme.colors.muted} />
+              <Text style={[styles.label, { color: theme.colors.text }]}>@henriedev</Text>
+            </View>
           </Pressable>
         </View>
       </ScrollView>
@@ -471,5 +730,22 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+  },
+  devCaption: {
+    marginTop: -4,
+    fontSize: 12,
+  },
+  linkRow: {
+    borderRadius: 12,
+    borderWidth: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  linkRowLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
 });

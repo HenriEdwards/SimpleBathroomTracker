@@ -1,6 +1,9 @@
 import { useCallback, useMemo, useState } from 'react';
 import {
   Alert,
+  NativeModules,
+  PermissionsAndroid,
+  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -10,6 +13,7 @@ import {
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import * as FileSystem from 'expo-file-system';
+import * as FileSystemLegacy from 'expo-file-system/legacy';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 
@@ -17,11 +21,27 @@ import type { AppSettings, BathroomEvent, EventType } from '../src/types';
 import { loadEvents, loadSettings } from '../src/lib/storage';
 import { usePro } from '../src/lib/pro';
 import { getTheme, resolveThemeMode } from '../src/lib/theme';
-import { buildCSV, buildPdfHtml, buildPlainText } from '../src/lib/export';
+import type { ExportChart } from '../src/lib/export';
+import { buildPdfHtml } from '../src/lib/export';
 import { usePaywall } from '../src/lib/paywall';
 
 type RangeFilter = 'today' | 'week' | 'month' | 'year' | 'all';
 type TypeFilter = 'all' | EventType;
+type BucketKind = 'hour' | 'day' | 'month';
+type BucketConfig = {
+  kind: BucketKind;
+  keys: string[];
+  labels: string[];
+  tickValues: number[];
+};
+type ExportChartSeries = {
+  label: string;
+  color: string;
+  values: number[];
+};
+type MediaStoreBridgeModule = {
+  savePdfToDownloads: (base64: string, fileName: string) => Promise<string>;
+};
 
 const RANGE_OPTIONS: Array<{ id: RangeFilter; label: string; summary: string }> = [
   { id: 'today', label: 'Today', summary: 'Today' },
@@ -36,6 +56,10 @@ const TYPE_OPTIONS: Array<{ id: TypeFilter; label: string }> = [
   { id: 'pee', label: 'Pee' },
   { id: 'poop', label: 'Poo' },
 ];
+
+const MS_PER_HOUR = 60 * 60 * 1000;
+const MS_PER_DAY = 24 * MS_PER_HOUR;
+const MONTH_LABELS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 function startOfDay(ts: number): number {
   const date = new Date(ts);
@@ -82,6 +106,182 @@ function rangeStart(range: RangeFilter, now: number): number {
   }
 }
 
+function bucketKey(ts: number, kind: BucketKind): string {
+  const date = new Date(ts);
+  const year = date.getFullYear();
+  const month = `${date.getMonth() + 1}`.padStart(2, '0');
+  const day = `${date.getDate()}`.padStart(2, '0');
+  if (kind === 'hour') {
+    const hour = `${date.getHours()}`.padStart(2, '0');
+    return `${year}-${month}-${day}-${hour}`;
+  }
+  if (kind === 'month') {
+    return `${year}-${month}`;
+  }
+  return `${year}-${month}-${day}`;
+}
+
+function buildTickValues(length: number, step: number): number[] {
+  if (length === 0) {
+    return [];
+  }
+  const values: number[] = [];
+  for (let i = 0; i < length; i += step) {
+    values.push(i);
+  }
+  if (values[values.length - 1] !== length - 1) {
+    values.push(length - 1);
+  }
+  return values;
+}
+
+function buildBucketConfig(
+  range: RangeFilter,
+  filteredEvents: BathroomEvent[],
+  now: number
+): BucketConfig {
+  const keys: string[] = [];
+  const labels: string[] = [];
+  let kind: BucketKind = 'day';
+  let tickStep = 1;
+
+  if (range === 'today') {
+    kind = 'hour';
+    const start = startOfDay(now);
+    for (let hour = 0; hour < 24; hour += 1) {
+      const ts = start + hour * MS_PER_HOUR;
+      keys.push(bucketKey(ts, kind));
+      labels.push(String(hour));
+    }
+    tickStep = 4;
+  } else if (range === 'week') {
+    kind = 'day';
+    const start = startOfWeek(now);
+    for (let day = 0; day < 7; day += 1) {
+      const ts = start + day * MS_PER_DAY;
+      const date = new Date(ts);
+      keys.push(bucketKey(ts, kind));
+      labels.push(`${date.getMonth() + 1}/${date.getDate()}`);
+    }
+    tickStep = 1;
+  } else if (range === 'month') {
+    kind = 'day';
+    const start = startOfMonth(now);
+    const end = startOfDay(now);
+    const totalDays = Math.floor((end - start) / MS_PER_DAY) + 1;
+    for (let day = 0; day < totalDays; day += 1) {
+      const ts = start + day * MS_PER_DAY;
+      const date = new Date(ts);
+      keys.push(bucketKey(ts, kind));
+      labels.push(String(date.getDate()));
+    }
+    tickStep = Math.max(1, Math.ceil(totalDays / 6));
+  } else if (range === 'year') {
+    kind = 'month';
+    const yearStart = startOfYear(now);
+    const currentMonth = new Date(now).getMonth();
+    for (let month = 0; month <= currentMonth; month += 1) {
+      const date = new Date(yearStart);
+      date.setMonth(month);
+      keys.push(bucketKey(date.getTime(), kind));
+      labels.push(MONTH_LABELS[month] ?? String(month + 1));
+    }
+    tickStep = 1;
+  } else {
+    kind = 'month';
+    if (filteredEvents.length === 0) {
+      return { kind, keys, labels, tickValues: [] };
+    }
+    const earliestTs = filteredEvents[filteredEvents.length - 1]?.ts ?? now;
+    const startDate = new Date(earliestTs);
+    startDate.setDate(1);
+    startDate.setHours(0, 0, 0, 0);
+    const endDate = new Date(now);
+    endDate.setDate(1);
+    endDate.setHours(0, 0, 0, 0);
+    const cursor = new Date(startDate);
+    while (cursor <= endDate) {
+      keys.push(bucketKey(cursor.getTime(), kind));
+      labels.push(`${MONTH_LABELS[cursor.getMonth()] ?? cursor.getMonth() + 1} ${cursor.getFullYear()}`);
+      cursor.setMonth(cursor.getMonth() + 1);
+    }
+    tickStep = Math.max(1, Math.ceil(keys.length / 6));
+  }
+
+  return { kind, keys, labels, tickValues: buildTickValues(keys.length, tickStep) };
+}
+
+function buildExportChart(
+  filteredEvents: BathroomEvent[],
+  range: RangeFilter,
+  typeFilter: TypeFilter,
+  theme: ReturnType<typeof getTheme>
+): ExportChart | null {
+  if (filteredEvents.length === 0) {
+    return null;
+  }
+  const now = Date.now();
+  const bucketConfig = buildBucketConfig(range, filteredEvents, now);
+  if (bucketConfig.keys.length === 0) {
+    return null;
+  }
+
+  const indexByKey = new Map<string, number>();
+  bucketConfig.keys.forEach((key, index) => {
+    indexByKey.set(key, index);
+  });
+  const peeCounts = new Array(bucketConfig.keys.length).fill(0);
+  const poopCounts = new Array(bucketConfig.keys.length).fill(0);
+
+  filteredEvents.forEach((event) => {
+    const key = bucketKey(event.ts, bucketConfig.kind);
+    const index = indexByKey.get(key);
+    if (index === undefined) {
+      return;
+    }
+    if (event.type === 'pee') {
+      peeCounts[index] += 1;
+    } else if (event.type === 'poop') {
+      poopCounts[index] += 1;
+    }
+  });
+
+  const series: ExportChartSeries[] = [];
+  if (typeFilter === 'all' || typeFilter === 'pee') {
+    series.push({ label: 'Pee', color: theme.colors.primary, values: peeCounts });
+  }
+  if (typeFilter === 'all' || typeFilter === 'poop') {
+    const color = typeFilter === 'all' ? theme.colors.text : theme.colors.primary;
+    series.push({ label: 'Poo', color, values: poopCounts });
+  }
+
+  let maxValue = 0;
+  const nonZeroBuckets = new Set<number>();
+  series.forEach((line) => {
+    line.values.forEach((value, index) => {
+      if (value > maxValue) {
+        maxValue = value;
+      }
+      if (value > 0) {
+        nonZeroBuckets.add(index);
+      }
+    });
+  });
+
+  return {
+    series,
+    maxValue: Math.max(1, maxValue),
+    canShow: nonZeroBuckets.size > 1,
+    gridColor: theme.colors.border,
+    textColor: theme.colors.text,
+    mutedColor: theme.colors.muted,
+    bgColor: theme.colors.card,
+    borderColor: theme.colors.border,
+    xLabels: bucketConfig.labels,
+    xTickIndices: bucketConfig.tickValues,
+  };
+}
+
 export default function ExportScreen() {
   const [events, setEvents] = useState<BathroomEvent[]>([]);
   const [settings, setSettings] = useState<AppSettings | null>(null);
@@ -91,6 +291,10 @@ export default function ExportScreen() {
   const systemMode = useColorScheme();
   const { isPro } = usePro();
   const { openPaywall } = usePaywall();
+  const mediaStoreBridge: MediaStoreBridgeModule | null =
+    Platform.OS === 'android' && NativeModules.MediaStoreBridge
+      ? (NativeModules.MediaStoreBridge as MediaStoreBridgeModule)
+      : null;
 
   useFocusEffect(
     useCallback(() => {
@@ -147,6 +351,11 @@ export default function ExportScreen() {
     };
   }, [filteredEvents, rangeFilter]);
 
+  const chart = useMemo(
+    () => buildExportChart(filteredEvents, rangeFilter, typeFilter, theme),
+    [filteredEvents, rangeFilter, typeFilter, theme]
+  );
+
   const ensureShareAvailable = async () => {
     const available = await Sharing.isAvailableAsync();
     if (!available) {
@@ -154,6 +363,11 @@ export default function ExportScreen() {
       return false;
     }
     return true;
+  };
+
+  const buildPdfFile = async (currentSettings: AppSettings) => {
+    const html = buildPdfHtml(filteredEvents, currentSettings, summary, chart);
+    return Print.printToFileAsync({ html });
   };
 
   const handleSharePdf = async () => {
@@ -165,8 +379,7 @@ export default function ExportScreen() {
     }
     setBusy(true);
     try {
-      const html = buildPdfHtml(filteredEvents, settings, summary);
-      const { uri } = await Print.printToFileAsync({ html });
+      const { uri } = await buildPdfFile(settings);
       await Sharing.shareAsync(uri, { mimeType: 'application/pdf' });
     } catch (error) {
       Alert.alert('Export failed', 'Unable to generate the PDF export.');
@@ -175,55 +388,86 @@ export default function ExportScreen() {
     }
   };
 
-  const handleShareText = async () => {
+  const handleDownloadPdf = async () => {
     if (!settings) {
-      return;
-    }
-    if (!(await ensureShareAvailable())) {
-      return;
-    }
-    const baseDir = FileSystem.cacheDirectory ?? FileSystem.documentDirectory;
-    if (!baseDir) {
-      Alert.alert('Export failed', 'No writable directory is available.');
       return;
     }
     setBusy(true);
     try {
-      const content = buildPlainText(filteredEvents, settings);
-      const uri = `${baseDir}SimpleBathroomTracker-export-${Date.now()}.txt`;
-      await FileSystem.writeAsStringAsync(uri, content, {
-        encoding: FileSystem.EncodingType.UTF8,
+      const { uri } = await buildPdfFile(settings);
+      const info = await FileSystemLegacy.getInfoAsync(uri);
+      if (!info.exists || !info.size) {
+        throw new Error(`PDF not generated at ${uri}`);
+      }
+      const base64 = await FileSystemLegacy.readAsStringAsync(uri, {
+        encoding: FileSystemLegacy.EncodingType.Base64,
       });
-      await Sharing.shareAsync(uri, { mimeType: 'text/plain' });
+      if (!base64) {
+        throw new Error('PDF base64 content is empty');
+      }
+      if (Platform.OS === 'android') {
+        const dateLabel = new Date().toISOString().slice(0, 10);
+        const fileName = `SBT_export_${dateLabel}_${Date.now().toString().slice(-4)}.pdf`;
+        if (mediaStoreBridge) {
+          const needsPermission = typeof Platform.Version === 'number' && Platform.Version < 29;
+          if (needsPermission) {
+            const granted = await PermissionsAndroid.request(
+              PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+              {
+                title: 'Storage permission',
+                message: 'Allow access to save exports to Downloads.',
+                buttonPositive: 'Allow',
+              }
+            );
+            if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
+              Alert.alert('Download canceled', 'Storage permission is required to save the PDF.');
+              return;
+            }
+          }
+          try {
+            await mediaStoreBridge.savePdfToDownloads(base64, fileName);
+            Alert.alert('Saved', 'Saved to Downloads');
+            return;
+          } catch (error) {
+            console.error('MediaStore save failed', error);
+          }
+        }
+        const storageAccessFramework =
+          FileSystem.StorageAccessFramework ?? FileSystemLegacy.StorageAccessFramework;
+        if (!storageAccessFramework) {
+          throw new Error('StorageAccessFramework unavailable');
+        }
+        const permissions = await storageAccessFramework.requestDirectoryPermissionsAsync();
+        if (!permissions.granted) {
+          Alert.alert('Download canceled', 'Choose a folder to save the PDF.');
+          return;
+        }
+        const destUri = await storageAccessFramework.createFileAsync(
+          permissions.directoryUri,
+          fileName,
+          'application/pdf'
+        );
+        await FileSystemLegacy.writeAsStringAsync(destUri, base64, {
+          encoding: FileSystemLegacy.EncodingType.Base64,
+        });
+        const decoded = decodeURIComponent(permissions.directoryUri);
+        const match = decoded.match(/primary:([^/]+)/);
+        const folderLabel = match?.[1]?.replace('Download', 'Downloads');
+        Alert.alert('Saved', folderLabel ? `Saved to ${folderLabel}` : `Saved ${fileName}`);
+      } else {
+        const baseDir = FileSystemLegacy.documentDirectory;
+        if (!baseDir) {
+          Alert.alert('Export failed', 'No writable directory is available.');
+          return;
+        }
+        const dateLabel = new Date().toISOString().slice(0, 10);
+        const destUri = `${baseDir}SBT_export_${dateLabel}_${Date.now().toString().slice(-4)}.pdf`;
+        await FileSystemLegacy.copyAsync({ from: uri, to: destUri });
+        Alert.alert('Saved', `Saved to ${destUri}`);
+      }
     } catch (error) {
-      Alert.alert('Export failed', 'Unable to generate the text export.');
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const handleShareCsv = async () => {
-    if (!settings) {
-      return;
-    }
-    if (!(await ensureShareAvailable())) {
-      return;
-    }
-    const baseDir = FileSystem.cacheDirectory ?? FileSystem.documentDirectory;
-    if (!baseDir) {
-      Alert.alert('Export failed', 'No writable directory is available.');
-      return;
-    }
-    setBusy(true);
-    try {
-      const content = buildCSV(filteredEvents, settings);
-      const uri = `${baseDir}SimpleBathroomTracker-export-${Date.now()}.csv`;
-      await FileSystem.writeAsStringAsync(uri, content, {
-        encoding: FileSystem.EncodingType.UTF8,
-      });
-      await Sharing.shareAsync(uri, { mimeType: 'text/csv' });
-    } catch (error) {
-      Alert.alert('Export failed', 'Unable to generate the CSV export.');
+      console.error('Download PDF failed', error);
+      Alert.alert('Export failed', 'Unable to save the PDF export.');
     } finally {
       setBusy(false);
     }
@@ -311,8 +555,7 @@ export default function ExportScreen() {
         <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Export</Text>
         <View style={[styles.card, { backgroundColor: theme.colors.card }]}>
           {shareButton('Share PDF', handleSharePdf, !isPro)}
-          {shareButton('Share Text', handleShareText, !isPro)}
-          {shareButton('Share CSV', handleShareCsv, !isPro)}
+          {shareButton('Download PDF', handleDownloadPdf, !isPro)}
         </View>
       </ScrollView>
 

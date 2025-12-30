@@ -10,6 +10,18 @@ export const ICON_PRESETS: string[] = [
   '\u{1F6BE}', // water closet
   '\u{1F642}', // slightly smiling face
   '\u{2B50}', // star
+  '\u{1F6C1}', // bathtub
+  '\u{1F6BF}', // shower
+  '\u{1F9FC}', // soap
+  '\u{1F9FD}', // sponge
+  '\u{1F9F4}', // lotion bottle
+  '\u{1FAA3}', // bucket
+  '\u{1FAA0}', // plunger
+  '\u{1F9FA}', // basket
+  '\u{1F33F}', // herb
+  '\u{1F338}', // cherry blossom
+  '\u{2728}', // sparkles
+  '\u{1F319}', // crescent moon
 ];
 
 export const DEFAULT_PEE_ICON = '\u{1F6BD}';
