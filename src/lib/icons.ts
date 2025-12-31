@@ -24,7 +24,7 @@ export const ICON_PRESETS: string[] = [
   '\u{1F319}', // crescent moon
 ];
 
-export const DEFAULT_PEE_ICON = '\u{1F6BD}';
+export const DEFAULT_PEE_ICON = '\u{1F4A7}';
 export const DEFAULT_POOP_ICON = '\u{1F4A9}';
 
 export function isValidIcon(icon: string): boolean {

@@ -1,3 +1,7 @@
+import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
+import Slider from '@react-native-community/slider';
+import { useFocusEffect } from '@react-navigation/native';
+import { useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
 import {
   Alert,
@@ -11,19 +15,15 @@ import {
   useColorScheme,
   View,
 } from 'react-native';
-import Slider from '@react-native-community/slider';
-import { useFocusEffect } from '@react-navigation/native';
-import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
-import { useRouter } from 'expo-router';
 
 import IconPickerModal from '../src/components/IconPickerModal';
-import type { AppSettings, BathroomEvent } from '../src/types';
-import { loadEvents, loadSettings, saveEvents, saveSettings, clearAllEvents } from '../src/lib/storage';
-import { setDevProOverride, usePro } from '../src/lib/pro';
-import { getTheme, resolveThemeMode, THEME_PRESETS } from '../src/lib/theme';
 import { DEFAULT_PEE_ICON, DEFAULT_POOP_ICON, ICON_PRESETS, isValidIcon } from '../src/lib/icons';
-import { mirrorWidgetSettings, mirrorWidgetSummary } from '../src/lib/widget-bridge';
 import { usePaywall } from '../src/lib/paywall';
+import { setDevProOverride, usePro } from '../src/lib/pro';
+import { clearAllEvents, loadEvents, loadSettings, saveEvents, saveSettings } from '../src/lib/storage';
+import { getTheme, resolveThemeMode, THEME_PRESETS } from '../src/lib/theme';
+import { mirrorWidgetSettings, mirrorWidgetSummary } from '../src/lib/widget-bridge';
+import type { AppSettings, BathroomEvent } from '../src/types';
 
 const DEFAULT_SETTINGS: AppSettings = {
   timeFormat: '24h',
@@ -270,7 +270,7 @@ export default function SettingsScreen() {
   };
 
   const handleRateApp = useCallback(async () => {
-    const packageId = 'com.anonymous.BathroomCounter';
+    const packageId = 'com.anonymous.BathroomTracker';
     const marketUrl = `market://details?id=${packageId}`;
     const webUrl = `https://play.google.com/store/apps/details?id=${packageId}`;
     const target = Platform.OS === 'android' ? marketUrl : webUrl;
@@ -283,7 +283,7 @@ export default function SettingsScreen() {
   }, []);
 
   const handleRequestFeature = useCallback(async () => {
-    const subject = 'Feature request - Simple Bathroom Tracker';
+    const subject = 'Feature request - Bathroom Tracker';
     const body = 'Tell me about the feature you would like to see.';
     const mailto = `mailto:henriedwards.work@gmail.com?subject=${encodeURIComponent(
       subject

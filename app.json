@@ -1,16 +1,16 @@
 {
   "expo": {
-    "name": "Simple Bathroom Tracker",
-    "slug": "BathroomCounter",
+    "name": "Bathroom Tracker",
+    "slug": "BathroomTracker",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/icon-final.png",
     "splash": {
-      "image": "./assets/logo.png",
+      "image": "./assets/final-logo.png",
       "resizeMode": "contain",
       "backgroundColor": "#000000"
     },
-    "scheme": "bathroomcounter",
+    "scheme": "bathroomtracker",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
@@ -19,11 +19,12 @@
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#000000",
-        "foregroundImage": "./assets/icon.png"
+        "foregroundImage": "./assets/icon-final-foreground.png"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.anonymous.BathroomCounter"
+      "package": "com.anonymous.BathroomTracker",
+      "versionCode": 1
     },
     "web": {
       "output": "static",
@@ -34,7 +35,7 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/logo.png",
+          "image": "./assets/final-logo.png",
           "imageWidth": 360,
           "resizeMode": "contain",
           "backgroundColor": "#000000",

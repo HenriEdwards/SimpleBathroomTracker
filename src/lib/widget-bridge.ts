@@ -15,9 +15,11 @@ type WidgetBridgeModule = {
     widgetOpacity: number,
     timeFormat: string,
     bgColor: string,
+    cardColor: string,
     textColor: string,
     mutedColor: string,
-    accentColor: string
+    accentColor: string,
+    accentTextColor: string
   ) => Promise<void>;
   setWidgetSummary?: (
     todayDate: string,
@@ -102,10 +104,12 @@ export async function mirrorWidgetSettings(
     themeMode,
     widgetOpacity,
     timeFormat,
+    theme.colors.bg,
     theme.colors.card,
     theme.colors.text,
     theme.colors.muted,
-    theme.colors.primary
+    theme.colors.primary,
+    theme.colors.accentText
   );
 }
 

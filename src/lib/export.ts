@@ -101,7 +101,7 @@ export function buildPdfHtml(
       </style>
     </head>
     <body>
-      <h1>Simple Bathroom Tracker Export</h1>
+      <h1>Bathroom Tracker Export</h1>
       <div class="summary">
         <div>Range: ${summary.rangeLabel}</div>
         <div>Total: ${summary.total} (Pee ${summary.pee} / Poo ${summary.poop})</div>

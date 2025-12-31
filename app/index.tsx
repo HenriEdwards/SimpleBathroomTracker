@@ -561,14 +561,12 @@ export default function HomeScreen() {
   const headerContent = (
     <View style={styles.headerContent}>
       <View style={actionLayout[0]}>
-        <Pressable
+        <View
           style={[actionLayout[1], { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}
-          onPress={() => handleLog('pee')}
         >
           <View style={styles.actionHeaderRow}>
             <View style={styles.actionIconColumn}>
               <Text style={styles.actionIcon}>{iconPee}</Text>
-              <Text style={[styles.actionLabel, { color: theme.colors.text }]}>PEE</Text>
             </View>
             <View style={styles.actionCountBlock}>
               <Text style={[styles.actionCount, { color: theme.colors.primary }]}>
@@ -578,19 +576,23 @@ export default function HomeScreen() {
                 {rangeCountLabel}
               </Text>
             </View>
+            <Pressable
+              onPress={() => handleLog('pee')}
+              style={[styles.actionAddButton, { backgroundColor: theme.colors.primary }]}
+            >
+              <Text style={[styles.actionAddText, { color: theme.colors.primaryText }]}>+</Text>
+            </Pressable>
           </View>
           <Text style={[styles.actionMeta, { color: theme.colors.muted }]}>
             Last: {lastPee ? formatTime(lastPee.ts, timeMode) : '--'}
           </Text>
-        </Pressable>
-        <Pressable
+        </View>
+        <View
           style={[actionLayout[1], { backgroundColor: theme.colors.card, borderColor: theme.colors.border }]}
-          onPress={() => handleLog('poop')}
         >
           <View style={styles.actionHeaderRow}>
             <View style={styles.actionIconColumn}>
               <Text style={styles.actionIcon}>{iconPoop}</Text>
-              <Text style={[styles.actionLabel, { color: theme.colors.text }]}>POO</Text>
             </View>
             <View style={styles.actionCountBlock}>
               <Text style={[styles.actionCount, { color: theme.colors.primary }]}>
@@ -600,11 +602,17 @@ export default function HomeScreen() {
                 {rangeCountLabel}
               </Text>
             </View>
+            <Pressable
+              onPress={() => handleLog('poop')}
+              style={[styles.actionAddButton, { backgroundColor: theme.colors.primary }]}
+            >
+              <Text style={[styles.actionAddText, { color: theme.colors.primaryText }]}>+</Text>
+            </Pressable>
           </View>
           <Text style={[styles.actionMeta, { color: theme.colors.muted }]}>
             Last: {lastPoop ? formatTime(lastPoop.ts, timeMode) : '--'}
           </Text>
-        </Pressable>
+        </View>
       </View>
 
       <View style={styles.filtersSection}>
@@ -706,7 +714,7 @@ export default function HomeScreen() {
     <View style={[styles.container, { backgroundColor: theme.colors.bg }]}>
       <Stack.Screen
         options={{
-          title: 'Simple Bathroom Tracker',
+          title: 'Bathroom Tracker',
           headerLeft: () => (
             <Pressable onPress={() => router.push('/settings')} style={styles.headerButton}>
               <Text style={[styles.headerButtonText, { color: theme.colors.primary }]}>Settings</Text>
@@ -976,18 +984,14 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     borderWidth: 1,
     padding: 16,
-    minHeight: 140,
     alignItems: 'center',
-    justifyContent: 'center',
   },
   actionCardFull: {
     width: '100%',
     borderRadius: 16,
     borderWidth: 1,
     padding: 16,
-    minHeight: 140,
     alignItems: 'center',
-    justifyContent: 'center',
   },
   actionIcon: {
     fontSize: 24,
@@ -996,19 +1000,29 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    width: '100%',
   },
   actionIconColumn: {
     alignItems: 'center',
-    marginRight: 10,
-  },
-  actionLabel: {
-    marginTop: 4,
-    fontSize: 14,
-    fontWeight: '700',
-    letterSpacing: 0.6,
+    marginRight: 12,
   },
   actionCountBlock: {
     alignItems: 'center',
+    marginRight: 12,
+  },
+  actionAddButton: {
+    alignSelf: 'center',
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  actionAddText: {
+    fontSize: 20,
+    fontWeight: '700',
+    includeFontPadding: false,
+    lineHeight: 20,
   },
   actionCount: {
     fontSize: 22,
