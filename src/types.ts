@@ -2,6 +2,7 @@ export type EventType = 'pee' | 'poop';
 
 export type ThemeMode = 'light' | 'dark';
 export type ThemeModePreference = ThemeMode | 'system';
+export type LanguageCode = 'en' | 'es' | 'pt' | 'fr' | 'hi' | 'id' | 'de' | 'ja';
 
 export type BathroomEvent = {
   id: string;
@@ -16,6 +17,7 @@ export type AppSettings = {
   widgetOpacity?: number;
   iconPee: string;
   iconPoop: string;
+  language?: LanguageCode;
 };
 
 export type ProState = {

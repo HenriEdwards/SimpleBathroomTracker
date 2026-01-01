@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, useColorScheme, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 
 import type { AppSettings } from '../src/types';
 import { loadSettings } from '../src/lib/storage';
@@ -10,9 +11,10 @@ import { usePro } from '../src/lib/pro';
 
 export default function PaywallScreen() {
   const router = useRouter();
+  const { t } = useTranslation();
   const systemMode = useColorScheme();
   const [settings, setSettings] = useState<AppSettings | null>(null);
-  const { isPro, purchase, restore, error, price } = usePro();
+  const { isPro, purchase, restore, errorKey, price } = usePro();
   const [busy, setBusy] = useState(false);
 
   useFocusEffect(
@@ -34,6 +36,7 @@ export default function PaywallScreen() {
 
   const resolvedMode = resolveThemeMode(settings?.themeMode, systemMode);
   const theme = getTheme({ presetId: settings?.themeId ?? 't1', mode: resolvedMode });
+  const errorMessage = errorKey ? t(errorKey) : null;
 
   const handleBuy = async () => {
     if (busy) {
@@ -68,29 +71,35 @@ export default function PaywallScreen() {
             { backgroundColor: theme.colors.card, borderColor: theme.colors.border },
           ]}
         >
-          <Text style={[styles.title, { color: theme.colors.text }]}>Unlock Pro</Text>
-          <Text style={[styles.subtitle, { color: theme.colors.muted }]}>
-            Lifetime unlock. Customize icons, themes, widget opacity, and export.
-          </Text>
+          <Text style={[styles.title, { color: theme.colors.text }]}>{t('paywall.title')}</Text>
+          <Text style={[styles.subtitle, { color: theme.colors.muted }]}>{t('paywall.subtitle')}</Text>
           <View style={styles.list}>
             <Text style={[styles.listItem, { color: theme.colors.text }]}>
-              • Widget customization (opacity)
+              - {t('proBenefits.widgetCustomization')}
             </Text>
-            <Text style={[styles.listItem, { color: theme.colors.text }]}>• Custom icons</Text>
-            <Text style={[styles.listItem, { color: theme.colors.text }]}>• Theme presets</Text>
             <Text style={[styles.listItem, { color: theme.colors.text }]}>
-              • Export to PDF
+              - {t('proBenefits.customIcons')}
+            </Text>
+            <Text style={[styles.listItem, { color: theme.colors.text }]}>
+              - {t('proBenefits.themePresets')}
+            </Text>
+            <Text style={[styles.listItem, { color: theme.colors.text }]}>
+              - {t('proBenefits.exportPdf')}
             </Text>
           </View>
 
-          {error ? <Text style={[styles.error, { color: theme.colors.accent }]}>{error}</Text> : null}
+          {errorMessage ? (
+            <Text style={[styles.error, { color: theme.colors.accent }]}>{errorMessage}</Text>
+          ) : null}
 
           {isPro ? (
             <Pressable
               style={[styles.secondaryButton, { borderColor: theme.colors.border }]}
               onPress={() => router.back()}
             >
-              <Text style={{ color: theme.colors.text, fontWeight: '600' }}>Close</Text>
+              <Text style={{ color: theme.colors.text, fontWeight: '600' }}>
+                {t('common.close')}
+              </Text>
             </Pressable>
           ) : (
             <>
@@ -100,7 +109,7 @@ export default function PaywallScreen() {
                 disabled={busy}
               >
                 <Text style={{ color: theme.colors.primaryText, fontWeight: '600' }}>
-                  Buy Lifetime{price ? ` • ${price}` : ''}
+                  {t('paywall.buyLifetime', { price: price ? ` ${price}` : '' })}
                 </Text>
               </Pressable>
               <Pressable
@@ -109,11 +118,11 @@ export default function PaywallScreen() {
                 disabled={busy}
               >
                 <Text style={{ color: theme.colors.text, fontWeight: '600' }}>
-                  Restore Purchases
+                  {t('paywall.restore')}
                 </Text>
               </Pressable>
               <Pressable style={styles.cancelButton} onPress={() => router.back()}>
-                <Text style={{ color: theme.colors.muted }}>Cancel</Text>
+                <Text style={{ color: theme.colors.muted }}>{t('paywall.cancel')}</Text>
               </Pressable>
             </>
           )}

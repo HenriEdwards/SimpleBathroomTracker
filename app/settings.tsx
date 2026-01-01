@@ -15,8 +15,11 @@ import {
   useColorScheme,
   View,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 
 import IconPickerModal from '../src/components/IconPickerModal';
+import { getDeviceLanguage, setI18nLanguage } from '../src/i18n';
+import { SUPPORTED_LANGUAGES, type SupportedLanguage } from '../src/i18n/languages';
 import { DEFAULT_PEE_ICON, DEFAULT_POOP_ICON, ICON_PRESETS, isValidIcon } from '../src/lib/icons';
 import { usePaywall } from '../src/lib/paywall';
 import { setDevProOverride, usePro } from '../src/lib/pro';
@@ -112,6 +115,7 @@ function buildSeedEvents(now: number): BathroomEvent[] {
 
 export default function SettingsScreen() {
   const router = useRouter();
+  const { t } = useTranslation();
   const [settings, setSettings] = useState<AppSettings | null>(null);
   const [activePicker, setActivePicker] = useState<'pee' | 'poop' | null>(null);
   const systemMode = useColorScheme();
@@ -144,12 +148,24 @@ export default function SettingsScreen() {
   const iconPoop = settings?.iconPoop ?? DEFAULT_POOP_ICON;
   const widgetOpacity = settings?.widgetOpacity ?? 1;
   const customizationLocked = !isPro;
+  const selectedLanguage = settings?.language ?? getDeviceLanguage();
 
   const updateSettings = async (next: AppSettings) => {
     setSettings(next);
     await saveSettings(next);
     const resolvedMode = resolveThemeMode(next.themeMode, systemMode);
     await mirrorWidgetSettings(next, resolvedMode);
+  };
+
+  const handleLanguageSelect = async (language: SupportedLanguage) => {
+    if (!settings) {
+      return;
+    }
+    if (settings.language === language) {
+      return;
+    }
+    await setI18nLanguage(language);
+    await updateSettings({ ...settings, language });
   };
 
   const handleOpacityChange = (value: number) => {
@@ -184,10 +200,10 @@ export default function SettingsScreen() {
   };
 
   const handleClearEvents = () => {
-    Alert.alert('Clear all events?', 'This will remove all logged events.', [
-      { text: 'Cancel', style: 'cancel' },
+    Alert.alert(t('alerts.clearAllTitle'), t('alerts.clearAllMessage'), [
+      { text: t('common.cancel'), style: 'cancel' },
       {
-        text: 'Clear',
+        text: t('common.clear'),
         style: 'destructive',
         onPress: async () => {
           await clearAllEvents();
@@ -197,18 +213,24 @@ export default function SettingsScreen() {
     ]);
   };
 
-  const applySeedEvents = useCallback(async (seeded: BathroomEvent[], mode: 'append' | 'replace') => {
-    try {
-      const existing = mode === 'append' ? await loadEvents() : [];
-      const next = mode === 'append' ? [...seeded, ...existing] : seeded;
-      next.sort((a, b) => b.ts - a.ts);
-      await saveEvents(next);
-      await mirrorWidgetSummary(next);
-      Alert.alert(mode === 'append' ? 'Added events' : 'Seeded events', `Seeded ${seeded.length} events.`);
-    } finally {
-      setSeedBusy(false);
-    }
-  }, []);
+  const applySeedEvents = useCallback(
+    async (seeded: BathroomEvent[], mode: 'append' | 'replace') => {
+      try {
+        const existing = mode === 'append' ? await loadEvents() : [];
+        const next = mode === 'append' ? [...seeded, ...existing] : seeded;
+        next.sort((a, b) => b.ts - a.ts);
+        await saveEvents(next);
+        await mirrorWidgetSummary(next);
+        const titleKey = mode === 'append' ? 'alerts.addedEventsTitle' : 'alerts.seededEventsTitle';
+        const messageKey =
+          mode === 'append' ? 'alerts.addedEventsMessage' : 'alerts.seededEventsMessage';
+        Alert.alert(t(titleKey), t(messageKey, { count: seeded.length }));
+      } finally {
+        setSeedBusy(false);
+      }
+    },
+    [t]
+  );
 
   const handleSeedDemoData = useCallback(async () => {
     if (!__DEV__ || seedBusy) {
@@ -219,21 +241,21 @@ export default function SettingsScreen() {
     try {
       const existing = await loadEvents();
       if (existing.length > 0) {
-        Alert.alert('Seed demo data', 'Append to or replace existing events?', [
+        Alert.alert(t('alerts.seedDemoTitle'), t('alerts.seedDemoMessage'), [
           {
-            text: 'Cancel',
+            text: t('common.cancel'),
             style: 'cancel',
             onPress: () => setSeedBusy(false),
           },
           {
-            text: 'Replace',
+            text: t('buttons.replace'),
             style: 'destructive',
             onPress: () => {
               void applySeedEvents(seeded, 'replace');
             },
           },
           {
-            text: 'Append',
+            text: t('buttons.append'),
             onPress: () => {
               void applySeedEvents(seeded, 'append');
             },
@@ -245,7 +267,7 @@ export default function SettingsScreen() {
     } catch {
       setSeedBusy(false);
     }
-  }, [applySeedEvents, seedBusy]);
+  }, [applySeedEvents, seedBusy, t]);
 
   const handleClearAndSeed = useCallback(async () => {
     if (!__DEV__ || seedBusy) {
@@ -257,13 +279,14 @@ export default function SettingsScreen() {
   }, [applySeedEvents, seedBusy]);
 
   const handleResetSettings = () => {
-    Alert.alert('Reset settings?', 'This will restore defaults.', [
-      { text: 'Cancel', style: 'cancel' },
+    Alert.alert(t('alerts.resetTitle'), t('alerts.resetMessage'), [
+      { text: t('common.cancel'), style: 'cancel' },
       {
-        text: 'Reset',
+        text: t('common.reset'),
         style: 'destructive',
         onPress: async () => {
           await updateSettings(DEFAULT_SETTINGS);
+          await setI18nLanguage(getDeviceLanguage());
         },
       },
     ]);
@@ -278,27 +301,27 @@ export default function SettingsScreen() {
       const supported = await Linking.canOpenURL(target);
       await Linking.openURL(supported ? target : webUrl);
     } catch {
-      Alert.alert('Unable to open the store right now.');
+      Alert.alert(t('alerts.storeUnavailable'));
     }
-  }, []);
+  }, [t]);
 
   const handleRequestFeature = useCallback(async () => {
-    const subject = 'Feature request - Bathroom Tracker';
-    const body = 'Tell me about the feature you would like to see.';
+    const subject = t('alerts.featureRequestSubject');
+    const body = t('alerts.featureRequestBody');
     const mailto = `mailto:henriedwards.work@gmail.com?subject=${encodeURIComponent(
       subject
     )}&body=${encodeURIComponent(body)}`;
     try {
       const supported = await Linking.canOpenURL(mailto);
       if (!supported) {
-        Alert.alert('No email app available.');
+        Alert.alert(t('alerts.noEmailApp'));
         return;
       }
       await Linking.openURL(mailto);
     } catch {
-      Alert.alert('Unable to open the email app.');
+      Alert.alert(t('alerts.emailOpenFailed'));
     }
-  }, []);
+  }, [t]);
 
   const handleOpenX = useCallback(async () => {
     const handle = 'henriedev';
@@ -308,9 +331,9 @@ export default function SettingsScreen() {
       const supported = await Linking.canOpenURL(appUrl);
       await Linking.openURL(supported ? appUrl : webUrl);
     } catch {
-      Alert.alert('Unable to open the X profile.');
+      Alert.alert(t('alerts.xOpenFailed'));
     }
-  }, []);
+  }, [t]);
 
   const handleProPress = () => {
     if (isPro) {
@@ -323,9 +346,11 @@ export default function SettingsScreen() {
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.bg }]}>
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Appearance</Text>
+        <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
+          {t('settings.sectionAppearance')}
+        </Text>
         <View style={[styles.card, { backgroundColor: theme.colors.card }]}>
-          <Text style={[styles.label, { color: theme.colors.text }]}>Mode</Text>
+          <Text style={[styles.label, { color: theme.colors.text }]}>{t('settings.mode')}</Text>
           <View style={styles.segmentedRow}>
             {(['light', 'dark'] as const).map((mode) => {
               const active = resolvedMode === mode;
@@ -344,17 +369,21 @@ export default function SettingsScreen() {
                   ]}
                 >
                   <Text style={{ color: active ? theme.colors.primaryText : theme.colors.text }}>
-                    {mode === 'light' ? 'Light' : 'Dark'}
+                    {mode === 'light' ? t('settings.light') : t('settings.dark')}
                   </Text>
                 </Pressable>
               );
             })}
           </View>
           <View style={styles.sectionRow}>
-            <Text style={[styles.label, { color: theme.colors.text }]}>Theme preset</Text>
+            <Text style={[styles.label, { color: theme.colors.text }]}>
+              {t('settings.themePreset')}
+            </Text>
             {customizationLocked ? (
               <View style={[styles.proBadge, { backgroundColor: theme.colors.primary }]}>
-                <Text style={[styles.proBadgeText, { color: theme.colors.primaryText }]}>Pro</Text>
+                <Text style={[styles.proBadgeText, { color: theme.colors.primaryText }]}>
+                  {t('settings.proBadge')}
+                </Text>
               </View>
             ) : null}
           </View>
@@ -383,12 +412,14 @@ export default function SettingsScreen() {
                 ]}
               >
                 <Text style={{ color: theme.colors.text, fontWeight: active ? '700' : '500' }}>
-                  {preset.name}
+                  {t(`themes.${preset.id}`)}
                 </Text>
               </Pressable>
             );
           })}
-          <Text style={[styles.label, { color: theme.colors.text }]}>Widget opacity</Text>
+          <Text style={[styles.label, { color: theme.colors.text }]}>
+            {t('settings.widgetOpacity')}
+          </Text>
           <Pressable
             onPress={() => {
               if (customizationLocked) {
@@ -412,11 +443,13 @@ export default function SettingsScreen() {
                 disabled={!settings || customizationLocked}
               />
               <Text style={[styles.opacityValue, { color: theme.colors.text }]}>
-                Opacity: {Math.round(widgetOpacity * 100)}%
+                {t('settings.opacityValue', { value: Math.round(widgetOpacity * 100) })}
               </Text>
             </View>
           </Pressable>
-          <Text style={[styles.label, { color: theme.colors.text }]}>Time format</Text>
+          <Text style={[styles.label, { color: theme.colors.text }]}>
+            {t('settings.timeFormat')}
+          </Text>
           <View style={styles.segmentedRow}>
             {(['24h', '12h'] as const).map((value) => {
               const active = settings?.timeFormat === value;
@@ -435,7 +468,36 @@ export default function SettingsScreen() {
                   ]}
                 >
                   <Text style={{ color: active ? theme.colors.primaryText : theme.colors.text }}>
-                    {value}
+                    {value === '24h' ? t('settings.timeFormat24') : t('settings.timeFormat12')}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+          <Text style={[styles.label, { color: theme.colors.text }]}>{t('settings.language')}</Text>
+          <View style={styles.languageRow}>
+            {SUPPORTED_LANGUAGES.map((language) => {
+              const active = selectedLanguage === language;
+              const label = t(`languages.${language}`);
+              return (
+                <Pressable
+                  key={language}
+                  onPress={() => handleLanguageSelect(language)}
+                  style={[
+                    styles.languageChip,
+                    {
+                      backgroundColor: active ? theme.colors.primary : theme.colors.card,
+                      borderColor: theme.colors.border,
+                    },
+                  ]}
+                >
+                  <Text
+                    style={{
+                      color: active ? theme.colors.primaryText : theme.colors.text,
+                      fontWeight: active ? '600' : '500',
+                    }}
+                  >
+                    {label}
                   </Text>
                 </Pressable>
               );
@@ -443,7 +505,9 @@ export default function SettingsScreen() {
           </View>
         </View>
 
-        <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Icons / Privacy</Text>
+        <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
+          {t('settings.sectionIconsPrivacy')}
+        </Text>
         <View style={[styles.card, { backgroundColor: theme.colors.card }]}>
           <Pressable
             style={[
@@ -459,17 +523,19 @@ export default function SettingsScreen() {
           >
             <View style={styles.iconCopy}>
               <View style={styles.sectionRow}>
-                <Text style={[styles.label, { color: theme.colors.text }]}>Pee icon</Text>
+                <Text style={[styles.label, { color: theme.colors.text }]}>
+                  {t('settings.iconPee')}
+                </Text>
                 {customizationLocked ? (
                   <View style={[styles.proBadge, { backgroundColor: theme.colors.primary }]}>
                     <Text style={[styles.proBadgeText, { color: theme.colors.primaryText }]}>
-                      Pro
+                      {t('settings.proBadge')}
                     </Text>
                   </View>
                 ) : null}
               </View>
               <Text style={[styles.iconHint, { color: theme.colors.muted }]}>
-                Choose an icon for privacy
+                {t('settings.chooseIconPrivacy')}
               </Text>
             </View>
             <Text style={[styles.iconPreview, { color: theme.colors.text }]}>{iconPee}</Text>
@@ -488,39 +554,47 @@ export default function SettingsScreen() {
           >
             <View style={styles.iconCopy}>
               <View style={styles.sectionRow}>
-                <Text style={[styles.label, { color: theme.colors.text }]}>Poo icon</Text>
+                <Text style={[styles.label, { color: theme.colors.text }]}>
+                  {t('settings.iconPoo')}
+                </Text>
                 {customizationLocked ? (
                   <View style={[styles.proBadge, { backgroundColor: theme.colors.primary }]}>
                     <Text style={[styles.proBadgeText, { color: theme.colors.primaryText }]}>
-                      Pro
+                      {t('settings.proBadge')}
                     </Text>
                   </View>
                 ) : null}
               </View>
               <Text style={[styles.iconHint, { color: theme.colors.muted }]}>
-                Choose an icon for privacy
+                {t('settings.chooseIconPrivacy')}
               </Text>
             </View>
             <Text style={[styles.iconPreview, { color: theme.colors.text }]}>{iconPoop}</Text>
           </Pressable>
         </View>
 
-        <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Pro</Text>
+        <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
+          {t('settings.sectionPro')}
+        </Text>
         <View style={[styles.card, { backgroundColor: theme.colors.card }]}>
           <Text style={[styles.label, { color: theme.colors.text }]}>
-            Status: {isPro ? 'Pro unlocked' : 'Pro locked'}
+            {t('settings.status', {
+              status: isPro ? t('settings.statusProUnlocked') : t('settings.statusProLocked'),
+            })}
           </Text>
           <Pressable
             style={[styles.primaryButton, { backgroundColor: theme.colors.primary }]}
             onPress={handleProPress}
           >
             <Text style={{ color: theme.colors.primaryText, fontWeight: '600' }}>
-              {isPro ? 'Pro Unlocked' : 'Unlock Pro'}
+              {isPro ? t('common.proUnlocked') : t('common.unlockPro')}
             </Text>
           </Pressable>
         </View>
 
-        <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Feedback</Text>
+        <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
+          {t('settings.sectionFeedback')}
+        </Text>
         <View style={[styles.card, { backgroundColor: theme.colors.card }]}>
           <Pressable
             style={[
@@ -529,7 +603,9 @@ export default function SettingsScreen() {
             ]}
             onPress={handleRateApp}
           >
-            <Text style={[styles.label, { color: theme.colors.text }]}>Rate the app</Text>
+            <Text style={[styles.label, { color: theme.colors.text }]}>
+              {t('settings.rateApp')}
+            </Text>
           </Pressable>
           <Pressable
             style={[
@@ -538,16 +614,22 @@ export default function SettingsScreen() {
             ]}
             onPress={handleRequestFeature}
           >
-            <Text style={[styles.label, { color: theme.colors.text }]}>Request a feature</Text>
+            <Text style={[styles.label, { color: theme.colors.text }]}>
+              {t('settings.requestFeature')}
+            </Text>
           </Pressable>
         </View>
 
         {__DEV__ ? (
           <>
-            <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Developer</Text>
+            <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
+              {t('settings.sectionDeveloper')}
+            </Text>
             <View style={[styles.card, { backgroundColor: theme.colors.card }]}>
               <View style={styles.rowBetween}>
-                <Text style={[styles.label, { color: theme.colors.text }]}>Enable Pro (dev)</Text>
+                <Text style={[styles.label, { color: theme.colors.text }]}>
+                  {t('settings.enableProDev')}
+                </Text>
                 <Switch
                   value={Boolean(devProOverride)}
                   onValueChange={async (value) => {
@@ -563,10 +645,10 @@ export default function SettingsScreen() {
                 onPress={handleSeedDemoData}
                 disabled={seedBusy}
               >
-                <Text style={{ color: theme.colors.text }}>Seed demo data</Text>
+                <Text style={{ color: theme.colors.text }}>{t('settings.seedDemoData')}</Text>
               </Pressable>
               <Text style={[styles.devCaption, { color: theme.colors.muted }]}>
-                Generates realistic events across the past 90 days.
+                {t('settings.seedCaption')}
               </Text>
               <Pressable
                 style={[
@@ -576,29 +658,33 @@ export default function SettingsScreen() {
                 onPress={handleClearAndSeed}
                 disabled={seedBusy}
               >
-                <Text style={{ color: theme.colors.text }}>Clear + Seed</Text>
+                <Text style={{ color: theme.colors.text }}>{t('settings.clearSeed')}</Text>
               </Pressable>
             </View>
           </>
         ) : null}
 
-        <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Data</Text>
+        <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
+          {t('settings.sectionData')}
+        </Text>
         <View style={[styles.card, { backgroundColor: theme.colors.card }]}>
           <Pressable
             style={[styles.secondaryButton, { borderColor: theme.colors.border }]}
             onPress={handleClearEvents}
           >
-            <Text style={{ color: theme.colors.text }}>Clear all events</Text>
+            <Text style={{ color: theme.colors.text }}>{t('settings.clearAllEvents')}</Text>
           </Pressable>
           <Pressable
             style={[styles.secondaryButton, { borderColor: theme.colors.border }]}
             onPress={handleResetSettings}
           >
-            <Text style={{ color: theme.colors.text }}>Reset settings</Text>
+            <Text style={{ color: theme.colors.text }}>{t('settings.resetSettings')}</Text>
           </Pressable>
         </View>
 
-        <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Contact</Text>
+        <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
+          {t('settings.sectionContact')}
+        </Text>
         <View style={[styles.card, { backgroundColor: theme.colors.card }]}>
           <Pressable
             style={[
@@ -609,7 +695,9 @@ export default function SettingsScreen() {
           >
             <View style={styles.linkRowLeft}>
               <FontAwesome6 name="x-twitter" size={18} color={theme.colors.muted} />
-              <Text style={[styles.label, { color: theme.colors.text }]}>@henriedev</Text>
+              <Text style={[styles.label, { color: theme.colors.text }]}>
+                {t('settings.contactHandle')}
+              </Text>
             </View>
           </Pressable>
         </View>
@@ -617,7 +705,9 @@ export default function SettingsScreen() {
 
       <IconPickerModal
         visible={activePicker !== null}
-        title={activePicker === 'poop' ? 'Poo icon' : 'Pee icon'}
+        title={
+          activePicker === 'poop' ? t('settings.iconPickerPooTitle') : t('settings.iconPickerPeeTitle')
+        }
         selected={activePicker === 'poop' ? iconPoop : iconPee}
         options={ICON_PRESETS}
         onSelect={handleIconSelect}
@@ -674,6 +764,17 @@ const styles = StyleSheet.create({
   segmentedRow: {
     flexDirection: 'row',
     gap: 8,
+  },
+  languageRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  languageChip: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 12,
+    borderWidth: 1,
   },
   opacityRow: {
     flexDirection: 'row',

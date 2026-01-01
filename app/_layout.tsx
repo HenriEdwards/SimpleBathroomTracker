@@ -1,19 +1,25 @@
+import '../src/i18n/init';
+
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useColorScheme } from 'react-native';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
 import 'react-native-reanimated';
+import { useTranslation } from 'react-i18next';
 
 import type { AppSettings } from '../src/types';
 import { loadSettings, subscribeSettings } from '../src/lib/storage';
 import { getTheme, resolveThemeMode } from '../src/lib/theme';
+import { getCurrentLanguage, getDeviceLanguage, setI18nLanguage, initI18n } from '../src/i18n';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
 export default function RootLayout() {
+  const { t } = useTranslation();
   const systemMode = useColorScheme();
   const [settings, setSettings] = useState<AppSettings | null>(null);
+  const [i18nReady, setI18nReady] = useState(false);
   const hasHiddenSplashRef = useRef(false);
   const splashTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -38,8 +44,11 @@ export default function RootLayout() {
     const load = async () => {
       try {
         const loaded = await loadSettings();
+        const initialLanguage = loaded.language ?? getDeviceLanguage();
+        await initI18n(initialLanguage);
         if (isActive) {
           setSettings(loaded);
+          setI18nReady(true);
         }
       } finally {
         void hideSplashIfNeeded();
@@ -59,12 +68,26 @@ export default function RootLayout() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!i18nReady) {
+      return;
+    }
+    const targetLanguage = settings?.language ?? getDeviceLanguage();
+    if (getCurrentLanguage() !== targetLanguage) {
+      void setI18nLanguage(targetLanguage);
+    }
+  }, [i18nReady, settings?.language]);
+
   const resolvedMode = resolveThemeMode(settings?.themeMode, systemMode);
   const theme = useMemo(
     () => getTheme({ presetId: settings?.themeId ?? 't1', mode: resolvedMode }),
     [settings?.themeId, resolvedMode]
   );
   const statusBarStyle = resolvedMode === 'dark' ? 'light' : 'dark';
+
+  if (!i18nReady) {
+    return null;
+  }
 
   return (
     <>
@@ -76,11 +99,11 @@ export default function RootLayout() {
           headerTitleAlign: 'center',
         }}
       >
-        <Stack.Screen name="index" options={{ title: 'Bathroom Tracker' }} />
-        <Stack.Screen name="export" options={{ title: 'Export' }} />
-        <Stack.Screen name="settings" options={{ title: 'Settings' }} />
-        <Stack.Screen name="paywall" options={{ title: 'Unlock Pro' }} />
-        <Stack.Screen name="pro-unlocked" options={{ title: 'Pro Unlocked' }} />
+        <Stack.Screen name="index" options={{ title: t('screens.home') }} />
+        <Stack.Screen name="export" options={{ title: t('screens.export') }} />
+        <Stack.Screen name="settings" options={{ title: t('screens.settings') }} />
+        <Stack.Screen name="paywall" options={{ title: t('screens.paywall') }} />
+        <Stack.Screen name="pro-unlocked" options={{ title: t('screens.proUnlocked') }} />
       </Stack>
       <StatusBar style={statusBarStyle} backgroundColor={theme.colors.bg} />
     </>

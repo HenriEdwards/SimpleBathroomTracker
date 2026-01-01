@@ -1,0 +1,226 @@
+{
+  "app": {
+    "title": "Bathroom Tracker"
+  },
+  "screens": {
+    "home": "Bathroom Tracker",
+    "export": "Ekspor",
+    "settings": "Pengaturan",
+    "paywall": "Buka Pro",
+    "proUnlocked": "Pro terbuka"
+  },
+  "nav": {
+    "settings": "Pengaturan",
+    "export": "Ekspor"
+  },
+  "common": {
+    "close": "Tutup",
+    "closeShort": "X",
+    "cancel": "Batal",
+    "delete": "Hapus",
+    "clear": "Bersihkan",
+    "reset": "Setel ulang",
+    "pro": "Pro",
+    "unlockPro": "Buka Pro",
+    "proUnlocked": "Pro terbuka"
+  },
+  "labels": {
+    "last": "Terakhir",
+    "dateRange": "Rentang tanggal",
+    "type": "Jenis",
+    "date": "Tanggal",
+    "time": "Waktu",
+    "range": "Rentang",
+    "total": "Total"
+  },
+  "range": {
+    "today": "Hari ini",
+    "week": "Minggu",
+    "month": "Bulan",
+    "year": "Tahun",
+    "all": "Semua",
+    "thisWeek": "Minggu ini",
+    "thisMonth": "Bulan ini",
+    "thisYear": "Tahun ini",
+    "allTime": "Sepanjang waktu"
+  },
+  "tabs": {
+    "events": "Peristiwa",
+    "stats": "Statistik"
+  },
+  "eventTypes": {
+    "pee": "Pipis",
+    "poop": "BAB"
+  },
+  "empty": {
+    "noEventsYet": "Belum ada peristiwa."
+  },
+  "list": {
+    "showingCount": "Menampilkan {{shown, number}} dari {{total, number}}",
+    "loadMore": "Muat {{count, number}} lagi",
+    "end": "Selesai"
+  },
+  "stats": {
+    "checkingPro": "Memeriksa status Pro...",
+    "lockedMessage": "Statistik dan grafik adalah fitur Pro.",
+    "chartUnavailable": "Grafik tidak tersedia saat ini.",
+    "noData": "Belum ada data untuk rentang ini.",
+    "notEnoughData": "Belum cukup data.",
+    "totals": "Total: {{peeLabel}} {{pee, number}} | {{poopLabel}} {{poop, number}}",
+    "total": "Total: {{count, number}}"
+  },
+  "modals": {
+    "deleteEventTitle": "Hapus peristiwa?",
+    "typeLabel": "Jenis",
+    "timeLabel": "Waktu",
+    "dateLabel": "Tanggal"
+  },
+  "settings": {
+    "sectionAppearance": "Tampilan",
+    "sectionIconsPrivacy": "Ikon / Privasi",
+    "sectionPro": "Pro",
+    "sectionFeedback": "Umpan balik",
+    "sectionDeveloper": "Pengembang",
+    "sectionData": "Data",
+    "sectionContact": "Kontak",
+    "mode": "Mode",
+    "light": "Terang",
+    "dark": "Gelap",
+    "themePreset": "Preset tema",
+    "widgetOpacity": "Opasitas widget",
+    "opacityValue": "Opasitas: {{value, number}}%",
+    "timeFormat": "Format waktu",
+    "timeFormat24": "24h",
+    "timeFormat12": "12h",
+    "iconPee": "Ikon pipis",
+    "iconPoo": "Ikon BAB",
+    "chooseIconPrivacy": "Pilih ikon untuk privasi",
+    "status": "Status: {{status}}",
+    "statusProUnlocked": "Pro terbuka",
+    "statusProLocked": "Pro terkunci",
+    "rateApp": "Beri rating app",
+    "requestFeature": "Minta fitur",
+    "enableProDev": "Aktifkan Pro (dev)",
+    "seedDemoData": "Isi data demo",
+    "seedCaption": "Membuat peristiwa realistis selama 90 hari terakhir.",
+    "clearSeed": "Bersihkan + Isi",
+    "clearAllEvents": "Hapus semua peristiwa",
+    "resetSettings": "Setel ulang pengaturan",
+    "language": "Bahasa",
+    "proBadge": "Pro",
+    "contactHandle": "@henriedev",
+    "iconPickerPeeTitle": "Ikon pipis",
+    "iconPickerPooTitle": "Ikon BAB"
+  },
+  "paywall": {
+    "title": "Buka Pro",
+    "subtitle": "Buka seumur hidup. Kustom ikon, tema, opasitas widget, dan ekspor.",
+    "buyLifetime": "Beli seumur hidup{{price}}",
+    "restore": "Pulihkan pembelian",
+    "cancel": "Batal"
+  },
+  "proUnlocked": {
+    "title": "Pro terbuka",
+    "subtitle": "Anda memiliki akses Pro seumur hidup.",
+    "included": "Termasuk:",
+    "close": "Tutup"
+  },
+  "proBenefits": {
+    "widgetCustomization": "Penyesuaian widget (opasitas)",
+    "customIcons": "Ikon kustom",
+    "themePresets": "Preset tema",
+    "exportPdf": "Ekspor ke PDF",
+    "exportAll": "Ekspor (PDF/Teks/CSV)",
+    "homeWidget": "Widget beranda (segera hadir)",
+    "incognitoIcons": "Ikon inkognito"
+  },
+  "upgradeModal": {
+    "title": "Upgrade Pro",
+    "subtitleLocked": "Buka manfaat ini:",
+    "subtitleUnlocked": "Pro sudah terbuka.",
+    "comingSoon": "Segera hadir. Build dev bisa dibuka sekarang.",
+    "enableProDev": "Aktifkan Pro (dev)"
+  },
+  "export": {
+    "filtersTitle": "Filter",
+    "summaryTitle": "Ringkasan",
+    "exportTitle": "Ekspor",
+    "sharePdf": "Bagikan PDF",
+    "downloadPdf": "Unduh PDF",
+    "rangeSummary": "Rentang: {{range}}",
+    "totalSummary": "Total: {{total, number}} ({{peeLabel}} {{pee, number}} / {{poopLabel}} {{poop, number}})",
+    "sharingUnavailableTitle": "Berbagi tidak tersedia",
+    "sharingUnavailableMessage": "Berbagi tidak tersedia di perangkat ini.",
+    "exportFailedTitle": "Ekspor gagal",
+    "exportFailedMessage": "Tidak dapat membuat ekspor PDF.",
+    "storagePermissionTitle": "Izin penyimpanan",
+    "storagePermissionMessage": "Izinkan akses untuk menyimpan ekspor ke Downloads.",
+    "allow": "Izinkan",
+    "downloadCanceledTitle": "Unduhan dibatalkan",
+    "downloadPermissionMessage": "Izin penyimpanan diperlukan untuk menyimpan PDF.",
+    "downloadChooseFolderMessage": "Pilih folder untuk menyimpan PDF.",
+    "savedTitle": "Tersimpan",
+    "savedMessage": "Tersimpan di {{destination}}",
+    "savedDownloadsMessage": "Tersimpan di Downloads",
+    "downloadsFolder": "Downloads",
+    "noWritableDirectory": "Tidak ada direktori yang dapat ditulis.",
+    "exportSaveFailedMessage": "Tidak dapat menyimpan ekspor PDF.",
+    "pdfTitle": "Ekspor Bathroom Tracker",
+    "pdfTrendTitle": "Tren",
+    "pdfTableDate": "Tanggal",
+    "pdfTableTime": "Waktu",
+    "pdfTableType": "Jenis",
+    "csvHeaderDate": "tanggal",
+    "csvHeaderTime": "waktu",
+    "csvHeaderType": "jenis",
+    "csvHeaderTimestamp": "timestamp"
+  },
+  "alerts": {
+    "clearAllTitle": "Hapus semua peristiwa?",
+    "clearAllMessage": "Ini akan menghapus semua peristiwa yang tercatat.",
+    "seededEventsTitle": "Peristiwa diisi",
+    "addedEventsTitle": "Peristiwa ditambahkan",
+    "seededEventsMessage_one": "Mengisi {{count, number}} peristiwa.",
+    "seededEventsMessage_other": "Mengisi {{count, number}} peristiwa.",
+    "addedEventsMessage_one": "Menambahkan {{count, number}} peristiwa.",
+    "addedEventsMessage_other": "Menambahkan {{count, number}} peristiwa.",
+    "seedDemoTitle": "Isi data demo",
+    "seedDemoMessage": "Tambahkan atau ganti peristiwa yang ada?",
+    "resetTitle": "Setel ulang pengaturan?",
+    "resetMessage": "Ini akan mengembalikan default.",
+    "storeUnavailable": "Tidak dapat membuka toko sekarang.",
+    "featureRequestSubject": "Permintaan fitur - Bathroom Tracker",
+    "featureRequestBody": "Ceritakan fitur yang ingin Anda lihat.",
+    "noEmailApp": "Tidak ada aplikasi email tersedia.",
+    "emailOpenFailed": "Tidak dapat membuka aplikasi email.",
+    "xOpenFailed": "Tidak dapat membuka profil X."
+  },
+  "buttons": {
+    "replace": "Ganti",
+    "append": "Tambahkan"
+  },
+  "proErrors": {
+    "billingUnavailable": "Penagihan tidak tersedia.",
+    "purchaseFailed": "Pembelian gagal.",
+    "restoreFailed": "Pemulihan gagal.",
+    "noPurchasesFound": "Tidak ada pembelian ditemukan."
+  },
+  "languages": {
+    "en": "Inggris",
+    "es": "Spanyol",
+    "pt": "Portugis",
+    "fr": "Prancis",
+    "hi": "Hindi",
+    "id": "Indonesia",
+    "de": "Jerman",
+    "ja": "Jepang"
+  },
+  "themes": {
+    "t1": "Linen",
+    "t2": "Danau",
+    "t3": "Sitrus",
+    "t4": "Batu Tulis",
+    "t5": "Hutan",
+    "t_peachy": "Mimpi"
+  }
+}

@@ -1,6 +1,7 @@
 import { NativeModules, Platform } from 'react-native';
 
 import type { AppSettings, BathroomEvent } from '../types';
+import i18n from '../i18n';
 import { getTheme } from './theme';
 import type { ThemeMode } from './theme';
 
@@ -14,6 +15,7 @@ type WidgetBridgeModule = {
     themeMode: string,
     widgetOpacity: number,
     timeFormat: string,
+    lastLabel: string,
     bgColor: string,
     cardColor: string,
     textColor: string,
@@ -96,6 +98,7 @@ export async function mirrorWidgetSettings(
   const themeMode = resolvedMode ?? (settings.themeMode === 'dark' ? 'dark' : 'light');
   const widgetOpacity = settings.widgetOpacity ?? 1;
   const timeFormat = settings.timeFormat ?? '24h';
+  const lastLabel = i18n.t('labels.last');
   const theme = getTheme({ presetId: settings.themeId ?? 't1', mode: themeMode });
   await widgetBridge.setWidgetSettingsMirror(
     settings.iconPee,
@@ -104,6 +107,7 @@ export async function mirrorWidgetSettings(
     themeMode,
     widgetOpacity,
     timeFormat,
+    lastLabel,
     theme.colors.bg,
     theme.colors.card,
     theme.colors.text,

@@ -16,6 +16,7 @@ import * as FileSystem from 'expo-file-system';
 import * as FileSystemLegacy from 'expo-file-system/legacy';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
+import { useTranslation } from 'react-i18next';
 
 import type { AppSettings, BathroomEvent, EventType } from '../src/types';
 import { loadEvents, loadSettings } from '../src/lib/storage';
@@ -24,6 +25,7 @@ import { getTheme, resolveThemeMode } from '../src/lib/theme';
 import type { ExportChart } from '../src/lib/export';
 import { buildPdfHtml } from '../src/lib/export';
 import { usePaywall } from '../src/lib/paywall';
+import { formatMonthLabel, formatMonthYearLabel, formatShortDate } from '../src/lib/time';
 
 type RangeFilter = 'today' | 'week' | 'month' | 'year' | 'all';
 type TypeFilter = 'all' | EventType;
@@ -43,23 +45,12 @@ type MediaStoreBridgeModule = {
   savePdfToDownloads: (base64: string, fileName: string) => Promise<string>;
 };
 
-const RANGE_OPTIONS: Array<{ id: RangeFilter; label: string; summary: string }> = [
-  { id: 'today', label: 'Today', summary: 'Today' },
-  { id: 'week', label: 'Week', summary: 'This week' },
-  { id: 'month', label: 'Month', summary: 'This month' },
-  { id: 'year', label: 'Year', summary: 'This year' },
-  { id: 'all', label: 'All', summary: 'All time' },
-];
+const RANGE_OPTIONS: RangeFilter[] = ['today', 'week', 'month', 'year', 'all'];
 
-const TYPE_OPTIONS: Array<{ id: TypeFilter; label: string }> = [
-  { id: 'all', label: 'All' },
-  { id: 'pee', label: 'Pee' },
-  { id: 'poop', label: 'Poo' },
-];
+const TYPE_OPTIONS: TypeFilter[] = ['all', 'pee', 'poop'];
 
 const MS_PER_HOUR = 60 * 60 * 1000;
 const MS_PER_DAY = 24 * MS_PER_HOUR;
-const MONTH_LABELS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 function startOfDay(ts: number): number {
   const date = new Date(ts);
@@ -159,9 +150,8 @@ function buildBucketConfig(
     const start = startOfWeek(now);
     for (let day = 0; day < 7; day += 1) {
       const ts = start + day * MS_PER_DAY;
-      const date = new Date(ts);
       keys.push(bucketKey(ts, kind));
-      labels.push(`${date.getMonth() + 1}/${date.getDate()}`);
+      labels.push(formatShortDate(ts));
     }
     tickStep = 1;
   } else if (range === 'month') {
@@ -184,7 +174,7 @@ function buildBucketConfig(
       const date = new Date(yearStart);
       date.setMonth(month);
       keys.push(bucketKey(date.getTime(), kind));
-      labels.push(MONTH_LABELS[month] ?? String(month + 1));
+      labels.push(formatMonthLabel(date.getTime()));
     }
     tickStep = 1;
   } else {
@@ -202,7 +192,7 @@ function buildBucketConfig(
     const cursor = new Date(startDate);
     while (cursor <= endDate) {
       keys.push(bucketKey(cursor.getTime(), kind));
-      labels.push(`${MONTH_LABELS[cursor.getMonth()] ?? cursor.getMonth() + 1} ${cursor.getFullYear()}`);
+      labels.push(formatMonthYearLabel(cursor.getTime()));
       cursor.setMonth(cursor.getMonth() + 1);
     }
     tickStep = Math.max(1, Math.ceil(keys.length / 6));
@@ -215,7 +205,8 @@ function buildExportChart(
   filteredEvents: BathroomEvent[],
   range: RangeFilter,
   typeFilter: TypeFilter,
-  theme: ReturnType<typeof getTheme>
+  theme: ReturnType<typeof getTheme>,
+  labels: { pee: string; poop: string }
 ): ExportChart | null {
   if (filteredEvents.length === 0) {
     return null;
@@ -248,11 +239,11 @@ function buildExportChart(
 
   const series: ExportChartSeries[] = [];
   if (typeFilter === 'all' || typeFilter === 'pee') {
-    series.push({ label: 'Pee', color: theme.colors.primary, values: peeCounts });
+    series.push({ label: labels.pee, color: theme.colors.primary, values: peeCounts });
   }
   if (typeFilter === 'all' || typeFilter === 'poop') {
     const color = typeFilter === 'all' ? theme.colors.text : theme.colors.primary;
-    series.push({ label: 'Poo', color, values: poopCounts });
+    series.push({ label: labels.poop, color, values: poopCounts });
   }
 
   let maxValue = 0;
@@ -283,6 +274,7 @@ function buildExportChart(
 }
 
 export default function ExportScreen() {
+  const { t } = useTranslation();
   const [events, setEvents] = useState<BathroomEvent[]>([]);
   const [settings, setSettings] = useState<AppSettings | null>(null);
   const [rangeFilter, setRangeFilter] = useState<RangeFilter>('today');
@@ -291,6 +283,16 @@ export default function ExportScreen() {
   const systemMode = useColorScheme();
   const { isPro } = usePro();
   const { openPaywall } = usePaywall();
+  const rangeSummaryLabels = useMemo(
+    () => ({
+      today: t('range.today'),
+      week: t('range.thisWeek'),
+      month: t('range.thisMonth'),
+      year: t('range.thisYear'),
+      all: t('range.allTime'),
+    }),
+    [t]
+  );
   const mediaStoreBridge: MediaStoreBridgeModule | null =
     Platform.OS === 'android' && NativeModules.MediaStoreBridge
       ? (NativeModules.MediaStoreBridge as MediaStoreBridgeModule)
@@ -341,25 +343,28 @@ export default function ExportScreen() {
         poop += 1;
       }
     });
-    const rangeLabel =
-      RANGE_OPTIONS.find((option) => option.id === rangeFilter)?.summary ?? 'All time';
+    const rangeLabel = rangeSummaryLabels[rangeFilter] ?? t('range.allTime');
     return {
       rangeLabel,
       total: filteredEvents.length,
       pee,
       poop,
     };
-  }, [filteredEvents, rangeFilter]);
+  }, [filteredEvents, rangeFilter, rangeSummaryLabels, t]);
 
   const chart = useMemo(
-    () => buildExportChart(filteredEvents, rangeFilter, typeFilter, theme),
-    [filteredEvents, rangeFilter, typeFilter, theme]
+    () =>
+      buildExportChart(filteredEvents, rangeFilter, typeFilter, theme, {
+        pee: t('eventTypes.pee'),
+        poop: t('eventTypes.poop'),
+      }),
+    [filteredEvents, rangeFilter, t, typeFilter, theme]
   );
 
   const ensureShareAvailable = async () => {
     const available = await Sharing.isAvailableAsync();
     if (!available) {
-      Alert.alert('Sharing unavailable', 'Sharing is not available on this device.');
+      Alert.alert(t('export.sharingUnavailableTitle'), t('export.sharingUnavailableMessage'));
       return false;
     }
     return true;
@@ -382,7 +387,7 @@ export default function ExportScreen() {
       const { uri } = await buildPdfFile(settings);
       await Sharing.shareAsync(uri, { mimeType: 'application/pdf' });
     } catch (error) {
-      Alert.alert('Export failed', 'Unable to generate the PDF export.');
+      Alert.alert(t('export.exportFailedTitle'), t('export.exportFailedMessage'));
     } finally {
       setBusy(false);
     }
@@ -414,19 +419,22 @@ export default function ExportScreen() {
             const granted = await PermissionsAndroid.request(
               PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
               {
-                title: 'Storage permission',
-                message: 'Allow access to save exports to Downloads.',
-                buttonPositive: 'Allow',
+                title: t('export.storagePermissionTitle'),
+                message: t('export.storagePermissionMessage'),
+                buttonPositive: t('export.allow'),
               }
             );
             if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
-              Alert.alert('Download canceled', 'Storage permission is required to save the PDF.');
+              Alert.alert(
+                t('export.downloadCanceledTitle'),
+                t('export.downloadPermissionMessage')
+              );
               return;
             }
           }
           try {
             await mediaStoreBridge.savePdfToDownloads(base64, fileName);
-            Alert.alert('Saved', 'Saved to Downloads');
+            Alert.alert(t('export.savedTitle'), t('export.savedDownloadsMessage'));
             return;
           } catch (error) {
             console.error('MediaStore save failed', error);
@@ -439,7 +447,10 @@ export default function ExportScreen() {
         }
         const permissions = await storageAccessFramework.requestDirectoryPermissionsAsync();
         if (!permissions.granted) {
-          Alert.alert('Download canceled', 'Choose a folder to save the PDF.');
+          Alert.alert(
+            t('export.downloadCanceledTitle'),
+            t('export.downloadChooseFolderMessage')
+          );
           return;
         }
         const destUri = await storageAccessFramework.createFileAsync(
@@ -453,57 +464,72 @@ export default function ExportScreen() {
         const decoded = decodeURIComponent(permissions.directoryUri);
         const match = decoded.match(/primary:([^/]+)/);
         const folderLabel = match?.[1]?.replace('Download', 'Downloads');
-        Alert.alert('Saved', folderLabel ? `Saved to ${folderLabel}` : `Saved ${fileName}`);
+        const savedMessage = folderLabel
+          ? t('export.savedMessage', { destination: folderLabel })
+          : t('export.savedMessage', { destination: fileName });
+        Alert.alert(t('export.savedTitle'), savedMessage);
       } else {
         const baseDir = FileSystemLegacy.documentDirectory;
         if (!baseDir) {
-          Alert.alert('Export failed', 'No writable directory is available.');
+          Alert.alert(t('export.exportFailedTitle'), t('export.noWritableDirectory'));
           return;
         }
         const dateLabel = new Date().toISOString().slice(0, 10);
         const destUri = `${baseDir}SBT_export_${dateLabel}_${Date.now().toString().slice(-4)}.pdf`;
         await FileSystemLegacy.copyAsync({ from: uri, to: destUri });
-        Alert.alert('Saved', `Saved to ${destUri}`);
+        Alert.alert(
+          t('export.savedTitle'),
+          t('export.savedMessage', { destination: destUri })
+        );
       }
     } catch (error) {
       console.error('Download PDF failed', error);
-      Alert.alert('Export failed', 'Unable to save the PDF export.');
+      Alert.alert(t('export.exportFailedTitle'), t('export.exportSaveFailedMessage'));
     } finally {
       setBusy(false);
     }
   };
 
-  const shareButton = (label: string, onPress: () => void, locked: boolean) => (
-    <Pressable
-      style={[
-        styles.primaryButton,
-        {
-          backgroundColor: locked ? theme.colors.border : theme.colors.primary,
-          opacity: busy ? 0.6 : 1,
-        },
-      ]}
-      onPress={locked ? openPaywall : onPress}
-      disabled={busy}
-    >
-      <Text style={{ color: locked ? theme.colors.muted : theme.colors.primaryText, fontWeight: '600' }}>
-        {label} {locked ? '(Pro)' : ''}
-      </Text>
-    </Pressable>
-  );
+  const shareButton = (label: string, onPress: () => void, locked: boolean) => {
+    const proSuffix = locked ? ` (${t('common.pro')})` : '';
+    return (
+      <Pressable
+        style={[
+          styles.primaryButton,
+          {
+            backgroundColor: locked ? theme.colors.border : theme.colors.primary,
+            opacity: busy ? 0.6 : 1,
+          },
+        ]}
+        onPress={locked ? openPaywall : onPress}
+        disabled={busy}
+      >
+        <Text
+          style={{ color: locked ? theme.colors.muted : theme.colors.primaryText, fontWeight: '600' }}
+        >
+          {label}
+          {proSuffix}
+        </Text>
+      </Pressable>
+    );
+  };
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.bg }]}>
       <ScrollView contentContainerStyle={styles.content}>
-        <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Filters</Text>
+        <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
+          {t('export.filtersTitle')}
+        </Text>
         <View style={[styles.card, { backgroundColor: theme.colors.card }]}>
-          <Text style={[styles.label, { color: theme.colors.text }]}>Date range</Text>
+          <Text style={[styles.label, { color: theme.colors.text }]}>{t('labels.dateRange')}</Text>
           <View style={styles.filterRow}>
-            {RANGE_OPTIONS.map((option) => {
-              const active = rangeFilter === option.id;
+            {RANGE_OPTIONS.map((optionId) => {
+              const active = rangeFilter === optionId;
+              const label = t(`range.${optionId}`);
               return (
                 <Pressable
-                  key={option.id}
-                  onPress={() => setRangeFilter(option.id)}
+                  key={optionId}
+                  onPress={() => setRangeFilter(optionId)}
                   style={[
                     styles.filterChip,
                     {
@@ -513,20 +539,22 @@ export default function ExportScreen() {
                   ]}
                 >
                   <Text style={{ color: active ? theme.colors.primaryText : theme.colors.text }}>
-                    {option.label}
+                    {label}
                   </Text>
                 </Pressable>
               );
             })}
           </View>
-          <Text style={[styles.label, { color: theme.colors.text }]}>Type</Text>
+          <Text style={[styles.label, { color: theme.colors.text }]}>{t('labels.type')}</Text>
           <View style={styles.filterRow}>
-            {TYPE_OPTIONS.map((option) => {
-              const active = typeFilter === option.id;
+            {TYPE_OPTIONS.map((optionId) => {
+              const active = typeFilter === optionId;
+              const label =
+                optionId === 'all' ? t('range.all') : t(`eventTypes.${optionId}`);
               return (
                 <Pressable
-                  key={option.id}
-                  onPress={() => setTypeFilter(option.id)}
+                  key={optionId}
+                  onPress={() => setTypeFilter(optionId)}
                   style={[
                     styles.filterChip,
                     {
@@ -536,7 +564,7 @@ export default function ExportScreen() {
                   ]}
                 >
                   <Text style={{ color: active ? theme.colors.primaryText : theme.colors.text }}>
-                    {option.label}
+                    {label}
                   </Text>
                 </Pressable>
               );
@@ -544,18 +572,30 @@ export default function ExportScreen() {
           </View>
         </View>
 
-        <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Summary</Text>
+        <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
+          {t('export.summaryTitle')}
+        </Text>
         <View style={[styles.card, { backgroundColor: theme.colors.card }]}>
-          <Text style={{ color: theme.colors.text }}>Range: {summary.rangeLabel}</Text>
           <Text style={{ color: theme.colors.text }}>
-            Total: {summary.total} (Pee {summary.pee} / Poo {summary.poop})
+            {t('export.rangeSummary', { range: summary.rangeLabel })}
+          </Text>
+          <Text style={{ color: theme.colors.text }}>
+            {t('export.totalSummary', {
+              total: summary.total,
+              pee: summary.pee,
+              poop: summary.poop,
+              peeLabel: t('eventTypes.pee'),
+              poopLabel: t('eventTypes.poop'),
+            })}
           </Text>
         </View>
 
-        <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>Export</Text>
+        <Text style={[styles.sectionTitle, { color: theme.colors.text }]}>
+          {t('export.exportTitle')}
+        </Text>
         <View style={[styles.card, { backgroundColor: theme.colors.card }]}>
-          {shareButton('Share PDF', handleSharePdf, !isPro)}
-          {shareButton('Download PDF', handleDownloadPdf, !isPro)}
+          {shareButton(t('export.sharePdf'), handleSharePdf, !isPro)}
+          {shareButton(t('export.downloadPdf'), handleDownloadPdf, !isPro)}
         </View>
       </ScrollView>
 

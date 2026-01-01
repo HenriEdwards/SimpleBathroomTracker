@@ -1,4 +1,5 @@
 import type { AppSettings, BathroomEvent } from '../types';
+import i18n from '../i18n';
 import { formatDate, formatTime } from './time';
 
 export type ExportSummary = {
@@ -30,7 +31,7 @@ export type ExportChart = {
 export function buildPlainText(events: BathroomEvent[], settings: AppSettings): string {
   return events
     .map((event) => {
-      const label = event.type === 'pee' ? 'Pee' : 'Poo';
+      const label = event.type === 'pee' ? i18n.t('eventTypes.pee') : i18n.t('eventTypes.poop');
       const icon = event.type === 'pee' ? settings.iconPee : settings.iconPoop;
       return `${formatDate(event.ts)} ${formatTime(event.ts, settings.timeFormat)} ${icon} ${label}`.trim();
     })
@@ -38,7 +39,12 @@ export function buildPlainText(events: BathroomEvent[], settings: AppSettings): 
 }
 
 export function buildCSV(events: BathroomEvent[], settings: AppSettings): string {
-  const header = 'date,time,type,timestamp';
+  const header = [
+    i18n.t('export.csvHeaderDate'),
+    i18n.t('export.csvHeaderTime'),
+    i18n.t('export.csvHeaderType'),
+    i18n.t('export.csvHeaderTimestamp'),
+  ].join(',');
   const rows = events.map((event) => {
     const date = formatDate(event.ts);
     const time = formatTime(event.ts, settings.timeFormat);
@@ -53,11 +59,21 @@ export function buildPdfHtml(
   summary: ExportSummary,
   chart?: ExportChart | null
 ): string {
+  const peeLabel = i18n.t('eventTypes.pee');
+  const poopLabel = i18n.t('eventTypes.poop');
+  const rangeSummary = i18n.t('export.rangeSummary', { range: summary.rangeLabel });
+  const totalSummary = i18n.t('export.totalSummary', {
+    total: summary.total,
+    pee: summary.pee,
+    poop: summary.poop,
+    peeLabel,
+    poopLabel,
+  });
   const rows = events
     .map((event) => {
       const date = formatDate(event.ts);
       const time = formatTime(event.ts, settings.timeFormat);
-      const label = event.type === 'pee' ? 'Pee' : 'Poo';
+      const label = event.type === 'pee' ? peeLabel : poopLabel;
       return `<tr><td>${date}</td><td>${time}</td><td>${label}</td></tr>`;
     })
     .join('');
@@ -66,7 +82,7 @@ export function buildPdfHtml(
     chart && chart.canShow
       ? `
       <div class="chart-card" style="background:${chart.bgColor}; border-color:${chart.borderColor};">
-        <div class="chart-title" style="color:${chart.mutedColor};">Trend</div>
+        <div class="chart-title" style="color:${chart.mutedColor};">${i18n.t('export.pdfTrendTitle')}</div>
         ${buildChartSvg(chart)}
         <div class="legend" style="color:${chart.mutedColor};">
           ${chart.series
@@ -101,15 +117,15 @@ export function buildPdfHtml(
       </style>
     </head>
     <body>
-      <h1>Bathroom Tracker Export</h1>
+      <h1>${i18n.t('export.pdfTitle')}</h1>
       <div class="summary">
-        <div>Range: ${summary.rangeLabel}</div>
-        <div>Total: ${summary.total} (Pee ${summary.pee} / Poo ${summary.poop})</div>
+        <div>${rangeSummary}</div>
+        <div>${totalSummary}</div>
       </div>
       ${chartMarkup}
       <table>
         <thead>
-          <tr><th>Date</th><th>Time</th><th>Type</th></tr>
+          <tr><th>${i18n.t('export.pdfTableDate')}</th><th>${i18n.t('export.pdfTableTime')}</th><th>${i18n.t('export.pdfTableType')}</th></tr>
         </thead>
         <tbody>
           ${rows}

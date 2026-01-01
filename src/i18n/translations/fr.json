@@ -1,0 +1,226 @@
+{
+  "app": {
+    "title": "Bathroom Tracker"
+  },
+  "screens": {
+    "home": "Bathroom Tracker",
+    "export": "Exporter",
+    "settings": "Paramètres",
+    "paywall": "Déverrouiller Pro",
+    "proUnlocked": "Pro déverrouillé"
+  },
+  "nav": {
+    "settings": "Paramètres",
+    "export": "Exporter"
+  },
+  "common": {
+    "close": "Fermer",
+    "closeShort": "X",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "clear": "Effacer",
+    "reset": "Réinitialiser",
+    "pro": "Pro",
+    "unlockPro": "Déverrouiller Pro",
+    "proUnlocked": "Pro déverrouillé"
+  },
+  "labels": {
+    "last": "Dernier",
+    "dateRange": "Plage de dates",
+    "type": "Type",
+    "date": "Date",
+    "time": "Heure",
+    "range": "Plage",
+    "total": "Total"
+  },
+  "range": {
+    "today": "Aujourd'hui",
+    "week": "Semaine",
+    "month": "Mois",
+    "year": "Année",
+    "all": "Tout",
+    "thisWeek": "Cette semaine",
+    "thisMonth": "Ce mois-ci",
+    "thisYear": "Cette année",
+    "allTime": "Tout le temps"
+  },
+  "tabs": {
+    "events": "Événements",
+    "stats": "Statistiques"
+  },
+  "eventTypes": {
+    "pee": "Pipi",
+    "poop": "Caca"
+  },
+  "empty": {
+    "noEventsYet": "Aucun événement pour le moment."
+  },
+  "list": {
+    "showingCount": "Affichage de {{shown, number}} sur {{total, number}}",
+    "loadMore": "Charger {{count, number}} de plus",
+    "end": "Fin"
+  },
+  "stats": {
+    "checkingPro": "Vérification du statut Pro...",
+    "lockedMessage": "Les stats et graphiques sont une fonctionnalité Pro.",
+    "chartUnavailable": "Le graphique est indisponible pour le moment.",
+    "noData": "Pas encore de données pour cette plage.",
+    "notEnoughData": "Pas encore assez de données.",
+    "totals": "Totaux : {{peeLabel}} {{pee, number}} | {{poopLabel}} {{poop, number}}",
+    "total": "Total : {{count, number}}"
+  },
+  "modals": {
+    "deleteEventTitle": "Supprimer l'événement ?",
+    "typeLabel": "Type",
+    "timeLabel": "Heure",
+    "dateLabel": "Date"
+  },
+  "settings": {
+    "sectionAppearance": "Apparence",
+    "sectionIconsPrivacy": "Icônes / Confidentialité",
+    "sectionPro": "Pro",
+    "sectionFeedback": "Avis",
+    "sectionDeveloper": "Développeur",
+    "sectionData": "Données",
+    "sectionContact": "Contact",
+    "mode": "Mode",
+    "light": "Clair",
+    "dark": "Sombre",
+    "themePreset": "Thème",
+    "widgetOpacity": "Opacité du widget",
+    "opacityValue": "Opacité : {{value, number}}%",
+    "timeFormat": "Format horaire",
+    "timeFormat24": "24h",
+    "timeFormat12": "12h",
+    "iconPee": "Icône pipi",
+    "iconPoo": "Icône caca",
+    "chooseIconPrivacy": "Choisissez une icône pour la confidentialité",
+    "status": "Statut : {{status}}",
+    "statusProUnlocked": "Pro déverrouillé",
+    "statusProLocked": "Pro verrouillé",
+    "rateApp": "Noter l'app",
+    "requestFeature": "Demander une fonctionnalité",
+    "enableProDev": "Activer Pro (dev)",
+    "seedDemoData": "Générer des données de démo",
+    "seedCaption": "Génère des événements réalistes sur les 90 derniers jours.",
+    "clearSeed": "Effacer + Générer",
+    "clearAllEvents": "Effacer tous les événements",
+    "resetSettings": "Réinitialiser les paramètres",
+    "language": "Langue",
+    "proBadge": "Pro",
+    "contactHandle": "@henriedev",
+    "iconPickerPeeTitle": "Icône pipi",
+    "iconPickerPooTitle": "Icône caca"
+  },
+  "paywall": {
+    "title": "Déverrouiller Pro",
+    "subtitle": "Déverrouillage à vie. Personnalisez les icônes, les thèmes, l'opacité du widget et l'export.",
+    "buyLifetime": "Acheter à vie{{price}}",
+    "restore": "Restaurer les achats",
+    "cancel": "Annuler"
+  },
+  "proUnlocked": {
+    "title": "Pro déverrouillé",
+    "subtitle": "Vous avez un accès Pro à vie.",
+    "included": "Inclus :",
+    "close": "Fermer"
+  },
+  "proBenefits": {
+    "widgetCustomization": "Personnalisation du widget (opacité)",
+    "customIcons": "Icônes personnalisées",
+    "themePresets": "Thèmes",
+    "exportPdf": "Exporter en PDF",
+    "exportAll": "Exporter (PDF/Texte/CSV)",
+    "homeWidget": "Widget d'accueil (bientôt)",
+    "incognitoIcons": "Icônes incognito"
+  },
+  "upgradeModal": {
+    "title": "Passer à Pro",
+    "subtitleLocked": "Déverrouillez ces avantages :",
+    "subtitleUnlocked": "Pro est déjà déverrouillé.",
+    "comingSoon": "Bientôt. Les builds dev peuvent déverrouiller maintenant.",
+    "enableProDev": "Activer Pro (dev)"
+  },
+  "export": {
+    "filtersTitle": "Filtres",
+    "summaryTitle": "Résumé",
+    "exportTitle": "Exporter",
+    "sharePdf": "Partager PDF",
+    "downloadPdf": "Télécharger PDF",
+    "rangeSummary": "Plage : {{range}}",
+    "totalSummary": "Total : {{total, number}} ({{peeLabel}} {{pee, number}} / {{poopLabel}} {{poop, number}})",
+    "sharingUnavailableTitle": "Partage indisponible",
+    "sharingUnavailableMessage": "Le partage n'est pas disponible sur cet appareil.",
+    "exportFailedTitle": "Échec de l'exportation",
+    "exportFailedMessage": "Impossible de générer l'export PDF.",
+    "storagePermissionTitle": "Autorisation de stockage",
+    "storagePermissionMessage": "Autorisez l'accès pour enregistrer les exports dans Téléchargements.",
+    "allow": "Autoriser",
+    "downloadCanceledTitle": "Téléchargement annulé",
+    "downloadPermissionMessage": "L'autorisation de stockage est requise pour enregistrer le PDF.",
+    "downloadChooseFolderMessage": "Choisissez un dossier pour enregistrer le PDF.",
+    "savedTitle": "Enregistré",
+    "savedMessage": "Enregistré dans {{destination}}",
+    "savedDownloadsMessage": "Enregistré dans Téléchargements",
+    "downloadsFolder": "Téléchargements",
+    "noWritableDirectory": "Aucun répertoire inscriptible n'est disponible.",
+    "exportSaveFailedMessage": "Impossible d'enregistrer l'export PDF.",
+    "pdfTitle": "Export Bathroom Tracker",
+    "pdfTrendTitle": "Tendance",
+    "pdfTableDate": "Date",
+    "pdfTableTime": "Heure",
+    "pdfTableType": "Type",
+    "csvHeaderDate": "date",
+    "csvHeaderTime": "heure",
+    "csvHeaderType": "type",
+    "csvHeaderTimestamp": "timestamp"
+  },
+  "alerts": {
+    "clearAllTitle": "Effacer tous les événements ?",
+    "clearAllMessage": "Cela supprimera tous les événements enregistrés.",
+    "seededEventsTitle": "Événements générés",
+    "addedEventsTitle": "Événements ajoutés",
+    "seededEventsMessage_one": "Généré {{count, number}} événement.",
+    "seededEventsMessage_other": "Générés {{count, number}} événements.",
+    "addedEventsMessage_one": "Ajouté {{count, number}} événement.",
+    "addedEventsMessage_other": "Ajoutés {{count, number}} événements.",
+    "seedDemoTitle": "Générer des données de démo",
+    "seedDemoMessage": "Ajouter ou remplacer les événements existants ?",
+    "resetTitle": "Réinitialiser les paramètres ?",
+    "resetMessage": "Cela restaurera les paramètres par défaut.",
+    "storeUnavailable": "Impossible d'ouvrir la boutique pour le moment.",
+    "featureRequestSubject": "Demande de fonctionnalité - Bathroom Tracker",
+    "featureRequestBody": "Dites-moi quelle fonctionnalité vous souhaitez voir.",
+    "noEmailApp": "Aucune application mail disponible.",
+    "emailOpenFailed": "Impossible d'ouvrir l'application mail.",
+    "xOpenFailed": "Impossible d'ouvrir le profil X."
+  },
+  "buttons": {
+    "replace": "Remplacer",
+    "append": "Ajouter"
+  },
+  "proErrors": {
+    "billingUnavailable": "Facturation indisponible.",
+    "purchaseFailed": "Échec de l'achat.",
+    "restoreFailed": "Échec de la restauration.",
+    "noPurchasesFound": "Aucun achat trouvé."
+  },
+  "languages": {
+    "en": "Anglais",
+    "es": "Espagnol",
+    "pt": "Portugais",
+    "fr": "Français",
+    "hi": "Hindi",
+    "id": "Indonésien",
+    "de": "Allemand",
+    "ja": "Japonais"
+  },
+  "themes": {
+    "t1": "Lin",
+    "t2": "Lac",
+    "t3": "Agrumes",
+    "t4": "Ardoise",
+    "t5": "Forêt",
+    "t_peachy": "Rêves"
+  }
+}

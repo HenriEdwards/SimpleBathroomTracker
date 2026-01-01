@@ -18,11 +18,19 @@ import {
 import { Stack, useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
 import { LineChart } from 'react-native-chart-kit';
+import { useTranslation } from 'react-i18next';
 
 import type { AppSettings, BathroomEvent, EventType } from '../src/types';
 import { appendEvent, loadEvents, loadSettings, saveEvents } from '../src/lib/storage';
 import { getTheme, resolveThemeMode } from '../src/lib/theme';
-import { formatDate, formatTime } from '../src/lib/time';
+import {
+  formatDate,
+  formatMonthLabel,
+  formatMonthYearLabel,
+  formatNumber,
+  formatShortDate,
+  formatTime,
+} from '../src/lib/time';
 import { DEFAULT_PEE_ICON, DEFAULT_POOP_ICON } from '../src/lib/icons';
 import { usePaywall } from '../src/lib/paywall';
 import { usePro } from '../src/lib/pro';
@@ -44,35 +52,14 @@ type BucketConfig = {
   tickValues: number[];
 };
 
-const RANGE_OPTIONS: Array<{ id: RangeFilter; label: string }> = [
-  { id: 'today', label: 'Today' },
-  { id: 'week', label: 'Week' },
-  { id: 'month', label: 'Month' },
-  { id: 'year', label: 'Year' },
-  { id: 'all', label: 'All' },
-];
+const RANGE_OPTIONS: RangeFilter[] = ['today', 'week', 'month', 'year', 'all'];
 
-const TYPE_OPTIONS: Array<{ id: TypeFilter; label: string }> = [
-  { id: 'all', label: 'All' },
-  { id: 'pee', label: 'Pee' },
-  { id: 'poop', label: 'Poo' },
-];
+const TYPE_OPTIONS: TypeFilter[] = ['all', 'pee', 'poop'];
 
-const TAB_OPTIONS: Array<{ id: ActiveTab; label: string }> = [
-  { id: 'events', label: 'Events' },
-  { id: 'stats', label: 'Stats' },
-];
-const RANGE_SUBLABELS: Record<RangeFilter, string> = {
-  today: 'Today',
-  week: 'This week',
-  month: 'This month',
-  year: 'This year',
-  all: 'All time',
-};
+const TAB_OPTIONS: ActiveTab[] = ['events', 'stats'];
 
 const MS_PER_HOUR = 60 * 60 * 1000;
 const MS_PER_DAY = 24 * MS_PER_HOUR;
-const MONTH_LABELS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 function pad2(value: number): string {
   return value.toString().padStart(2, '0');
@@ -131,9 +118,8 @@ function buildBucketConfig(
     const start = startOfWeek(now);
     for (let day = 0; day < 7; day += 1) {
       const ts = start + day * MS_PER_DAY;
-      const date = new Date(ts);
       keys.push(bucketKey(ts, kind));
-      labels.push(`${date.getMonth() + 1}/${date.getDate()}`);
+      labels.push(formatShortDate(ts));
     }
     tickStep = 1;
   } else if (range === 'month') {
@@ -156,7 +142,7 @@ function buildBucketConfig(
       const date = new Date(yearStart);
       date.setMonth(month);
       keys.push(bucketKey(date.getTime(), kind));
-      labels.push(MONTH_LABELS[month] ?? String(month + 1));
+      labels.push(formatMonthLabel(date.getTime()));
     }
     tickStep = 1;
   } else {
@@ -174,7 +160,7 @@ function buildBucketConfig(
     const cursor = new Date(startDate);
     while (cursor <= endDate) {
       keys.push(bucketKey(cursor.getTime(), kind));
-      labels.push(`${MONTH_LABELS[cursor.getMonth()] ?? cursor.getMonth() + 1} ${cursor.getFullYear()}`);
+      labels.push(formatMonthYearLabel(cursor.getTime()));
       cursor.setMonth(cursor.getMonth() + 1);
     }
     tickStep = Math.max(1, Math.ceil(keys.length / 6));
@@ -235,6 +221,7 @@ function rangeStart(range: RangeFilter, now: number): number {
 
 export default function HomeScreen() {
   const router = useRouter();
+  const { t } = useTranslation();
   const { width } = useWindowDimensions();
   const [events, setEvents] = useState<BathroomEvent[]>([]);
   const [settings, setSettings] = useState<AppSettings | null>(null);
@@ -318,6 +305,16 @@ export default function HomeScreen() {
   const timeMode = settings?.timeFormat ?? '24h';
   const iconPee = settings?.iconPee ?? DEFAULT_PEE_ICON;
   const iconPoop = settings?.iconPoop ?? DEFAULT_POOP_ICON;
+  const rangeSublabels = useMemo(
+    () => ({
+      today: t('range.today'),
+      week: t('range.thisWeek'),
+      month: t('range.thisMonth'),
+      year: t('range.thisYear'),
+      all: t('range.allTime'),
+    }),
+    [t]
+  );
 
   useEffect(() => {
     if (settings) {
@@ -493,10 +490,10 @@ export default function HomeScreen() {
     const poopData = poopCounts.map((count, index) => ({ x: index, y: count }));
     const series: Array<{ id: EventType; label: string; data: Array<{ x: number; y: number }> }> = [];
     if (typeFilter === 'all' || typeFilter === 'pee') {
-      series.push({ id: 'pee', label: 'Pee', data: peeData });
+      series.push({ id: 'pee', label: t('eventTypes.pee'), data: peeData });
     }
     if (typeFilter === 'all' || typeFilter === 'poop') {
-      series.push({ id: 'poop', label: 'Poo', data: poopData });
+      series.push({ id: 'poop', label: t('eventTypes.poop'), data: poopData });
     }
     const nonZeroBuckets = new Set<number>();
     series.forEach((line) => {
@@ -513,7 +510,7 @@ export default function HomeScreen() {
       hasData: nonZeroBuckets.size > 0,
       nonZeroBuckets: nonZeroBuckets.size,
     };
-  }, [activeTab, canShowStats, filteredEvents, rangeFilter, typeFilter]);
+  }, [activeTab, canShowStats, filteredEvents, rangeFilter, t, typeFilter]);
 
   const statsChecking = activeTab === 'stats' && isProLoading;
   const statsLocked = activeTab === 'stats' && !canShowStats && !statsChecking;
@@ -523,7 +520,7 @@ export default function HomeScreen() {
   const actionLayout =
     width < 380 ? [styles.actionColumn, styles.actionCardFull] : [styles.actionRow, styles.actionCard];
   const chartWidth = Math.max(width - 80, 0);
-  const rangeCountLabel = RANGE_SUBLABELS[rangeFilter];
+  const rangeCountLabel = rangeSublabels[rangeFilter];
   const chartData = useMemo(() => {
     if (!statsData) {
       return null;
@@ -555,7 +552,26 @@ export default function HomeScreen() {
       })),
     };
   }, [statsData, theme.colors.primary, theme.colors.text]);
-  const deleteTypeLabel = deleteCandidate?.type === 'pee' ? 'Pee' : 'Poo';
+  const statsSummaryText = useMemo(() => {
+    if (!statsData) {
+      return '';
+    }
+    if (typeFilter === 'all') {
+      return t('stats.totals', {
+        pee: statsData.totals.pee,
+        poop: statsData.totals.poop,
+        peeLabel: t('eventTypes.pee'),
+        poopLabel: t('eventTypes.poop'),
+      });
+    }
+    const total = typeFilter === 'pee' ? statsData.totals.pee : statsData.totals.poop;
+    return t('stats.total', { count: total });
+  }, [statsData, t, typeFilter]);
+  const deleteTypeLabel = deleteCandidate
+    ? deleteCandidate.type === 'pee'
+      ? t('eventTypes.pee')
+      : t('eventTypes.poop')
+    : '';
   const deleteTimeLabel = deleteCandidate ? formatTime(deleteCandidate.ts, timeMode) : '';
   const deleteDateLabel = deleteCandidate ? formatDate(deleteCandidate.ts) : '';
   const headerContent = (
@@ -570,7 +586,7 @@ export default function HomeScreen() {
             </View>
             <View style={styles.actionCountBlock}>
               <Text style={[styles.actionCount, { color: theme.colors.primary }]}>
-                {rangeCounts.pee}
+                {formatNumber(rangeCounts.pee)}
               </Text>
               <Text style={[styles.actionCountSubLabel, { color: theme.colors.muted }]}>
                 {rangeCountLabel}
@@ -584,7 +600,7 @@ export default function HomeScreen() {
             </Pressable>
           </View>
           <Text style={[styles.actionMeta, { color: theme.colors.muted }]}>
-            Last: {lastPee ? formatTime(lastPee.ts, timeMode) : '--'}
+            {t('labels.last')}: {lastPee ? formatTime(lastPee.ts, timeMode) : '--'}
           </Text>
         </View>
         <View
@@ -596,7 +612,7 @@ export default function HomeScreen() {
             </View>
             <View style={styles.actionCountBlock}>
               <Text style={[styles.actionCount, { color: theme.colors.primary }]}>
-                {rangeCounts.poop}
+                {formatNumber(rangeCounts.poop)}
               </Text>
               <Text style={[styles.actionCountSubLabel, { color: theme.colors.muted }]}>
                 {rangeCountLabel}
@@ -610,20 +626,23 @@ export default function HomeScreen() {
             </Pressable>
           </View>
           <Text style={[styles.actionMeta, { color: theme.colors.muted }]}>
-            Last: {lastPoop ? formatTime(lastPoop.ts, timeMode) : '--'}
+            {t('labels.last')}: {lastPoop ? formatTime(lastPoop.ts, timeMode) : '--'}
           </Text>
         </View>
       </View>
 
       <View style={styles.filtersSection}>
-        <Text style={[styles.sectionLabel, { color: theme.colors.text }]}>Date range</Text>
+        <Text style={[styles.sectionLabel, { color: theme.colors.text }]}>
+          {t('labels.dateRange')}
+        </Text>
         <View style={styles.filterRow}>
-          {RANGE_OPTIONS.map((option) => {
-            const active = rangeFilter === option.id;
+          {RANGE_OPTIONS.map((optionId) => {
+            const active = rangeFilter === optionId;
+            const label = t(`range.${optionId}`);
             return (
               <Pressable
-                key={option.id}
-                onPress={() => setRangeFilter(option.id)}
+                key={optionId}
+                onPress={() => setRangeFilter(optionId)}
                 style={[
                   styles.filterChip,
                   {
@@ -638,20 +657,22 @@ export default function HomeScreen() {
                     fontWeight: active ? '600' : '500',
                   }}
                 >
-                  {option.label}
+                  {label}
                 </Text>
               </Pressable>
             );
           })}
         </View>
-        <Text style={[styles.sectionLabel, { color: theme.colors.text }]}>Type</Text>
+        <Text style={[styles.sectionLabel, { color: theme.colors.text }]}>{t('labels.type')}</Text>
         <View style={styles.filterRow}>
-          {TYPE_OPTIONS.map((option) => {
-            const active = typeFilter === option.id;
+          {TYPE_OPTIONS.map((optionId) => {
+            const active = typeFilter === optionId;
+            const label =
+              optionId === 'all' ? t('range.all') : t(`eventTypes.${optionId}`);
             return (
               <Pressable
-                key={option.id}
-                onPress={() => setTypeFilter(option.id)}
+                key={optionId}
+                onPress={() => setTypeFilter(optionId)}
                 style={[
                   styles.filterChip,
                   {
@@ -666,7 +687,7 @@ export default function HomeScreen() {
                     fontWeight: active ? '600' : '500',
                   }}
                 >
-                  {option.label}
+                  {label}
                 </Text>
               </Pressable>
             );
@@ -680,12 +701,13 @@ export default function HomeScreen() {
           { backgroundColor: theme.colors.card, borderColor: theme.colors.border },
         ]}
       >
-        {TAB_OPTIONS.map((tab) => {
-          const active = activeTab === tab.id;
+        {TAB_OPTIONS.map((tabId) => {
+          const active = activeTab === tabId;
+          const label = t(`tabs.${tabId}`);
           return (
             <Pressable
-              key={tab.id}
-              onPress={() => handleTabPress(tab.id)}
+              key={tabId}
+              onPress={() => handleTabPress(tabId)}
               style={[
                 styles.tabButton,
                 { backgroundColor: active ? theme.colors.primary : 'transparent' },
@@ -697,7 +719,7 @@ export default function HomeScreen() {
                   { color: active ? theme.colors.primaryText : theme.colors.text },
                 ]}
               >
-                {tab.label}
+                {label}
               </Text>
             </Pressable>
           );
@@ -705,7 +727,7 @@ export default function HomeScreen() {
       </View>
 
       <Text style={[styles.sectionLabel, { color: theme.colors.text }]}>
-        {activeTab === 'events' ? 'Events' : 'Stats'}
+        {activeTab === 'events' ? t('tabs.events') : t('tabs.stats')}
       </Text>
     </View>
   );
@@ -714,15 +736,19 @@ export default function HomeScreen() {
     <View style={[styles.container, { backgroundColor: theme.colors.bg }]}>
       <Stack.Screen
         options={{
-          title: 'Bathroom Tracker',
+          title: t('screens.home'),
           headerLeft: () => (
             <Pressable onPress={() => router.push('/settings')} style={styles.headerButton}>
-              <Text style={[styles.headerButtonText, { color: theme.colors.primary }]}>Settings</Text>
+              <Text style={[styles.headerButtonText, { color: theme.colors.primary }]}>
+                {t('nav.settings')}
+              </Text>
             </Pressable>
           ),
           headerRight: () => (
             <Pressable onPress={() => router.push('/export')} style={styles.headerButton}>
-              <Text style={[styles.headerButtonText, { color: theme.colors.primary }]}>Export</Text>
+              <Text style={[styles.headerButtonText, { color: theme.colors.primary }]}>
+                {t('nav.export')}
+              </Text>
             </Pressable>
           ),
         }}
@@ -734,14 +760,14 @@ export default function HomeScreen() {
           ListHeaderComponent={headerContent}
           ListEmptyComponent={
             <View style={styles.emptyState}>
-              <Text style={{ color: theme.colors.muted }}>No events yet.</Text>
+              <Text style={{ color: theme.colors.muted }}>{t('empty.noEventsYet')}</Text>
             </View>
           }
           ListFooterComponent={
             filteredCount > 0 ? (
               <View style={styles.loadMoreSection}>
                 <Text style={[styles.loadMoreLabel, { color: theme.colors.muted }]}>
-                  Showing {showingCount} of {filteredCount}
+                  {t('list.showingCount', { shown: showingCount, total: filteredCount })}
                 </Text>
                 {canLoadMore ? (
                   <Pressable
@@ -751,10 +777,14 @@ export default function HomeScreen() {
                     ]}
                     onPress={handleLoadMore}
                   >
-                    <Text style={[styles.loadMoreText, { color: theme.colors.text }]}>Load 10 more</Text>
+                    <Text style={[styles.loadMoreText, { color: theme.colors.text }]}>
+                      {t('list.loadMore', { count: 10 })}
+                    </Text>
                   </Pressable>
                 ) : (
-                  <Text style={[styles.endLabel, { color: theme.colors.muted }]}>End</Text>
+                  <Text style={[styles.endLabel, { color: theme.colors.muted }]}>
+                    {t('list.end')}
+                  </Text>
                 )}
               </View>
             ) : null
@@ -770,14 +800,17 @@ export default function HomeScreen() {
                 {formatTime(item.ts, timeMode)}
               </Text>
               <Text style={[styles.eventType, { color: theme.colors.text }]}>
-                {item.type === 'pee' ? iconPee : iconPoop} {item.type === 'pee' ? 'Pee' : 'Poo'}
+                {item.type === 'pee' ? iconPee : iconPoop}{' '}
+                {item.type === 'pee' ? t('eventTypes.pee') : t('eventTypes.poop')}
               </Text>
               <Pressable
                 onPress={() => handleDeleteEvent(item)}
                 style={[styles.eventDelete, { borderColor: theme.colors.border }]}
                 hitSlop={8}
               >
-                <Text style={[styles.eventDeleteText, { color: theme.colors.muted }]}>X</Text>
+                <Text style={[styles.eventDeleteText, { color: theme.colors.muted }]}>
+                  {t('common.closeShort')}
+                </Text>
               </Pressable>
             </View>
           )}
@@ -794,7 +827,7 @@ export default function HomeScreen() {
               ]}
             >
               <Text style={[styles.statsMessage, { color: theme.colors.muted }]}>
-                Checking Pro status...
+                {t('stats.checkingPro')}
               </Text>
             </View>
           ) : null}
@@ -811,7 +844,7 @@ export default function HomeScreen() {
                 <View style={[styles.lockedLine, { backgroundColor: theme.colors.border }]} />
               </View>
               <Text style={[styles.statsMessage, { color: theme.colors.text }]}>
-                Stats & graphs are a Pro feature.
+                {t('stats.lockedMessage')}
               </Text>
               <Pressable
                 style={[
@@ -819,11 +852,11 @@ export default function HomeScreen() {
                   { backgroundColor: theme.colors.primary, borderColor: theme.colors.border },
                 ]}
                 onPress={openPaywall}
-              >
-                <Text style={[styles.unlockButtonText, { color: theme.colors.primaryText }]}>
-                  Unlock Pro
-                </Text>
-              </Pressable>
+                >
+                  <Text style={[styles.unlockButtonText, { color: theme.colors.primaryText }]}>
+                    {t('common.unlockPro')}
+                  </Text>
+                </Pressable>
             </View>
           ) : null}
           {canShowStats && statsData ? (
@@ -835,15 +868,15 @@ export default function HomeScreen() {
             >
               {!chartComponentsReady ? (
                 <Text style={[styles.statsMessage, { color: theme.colors.muted }]}>
-                  Chart is unavailable right now.
+                  {t('stats.chartUnavailable')}
                 </Text>
               ) : !statsData.hasData ? (
                 <Text style={[styles.statsMessage, { color: theme.colors.muted }]}>
-                  No data for this range yet.
+                  {t('stats.noData')}
                 </Text>
               ) : statsData.nonZeroBuckets <= 1 ? (
                 <Text style={[styles.statsMessage, { color: theme.colors.muted }]}>
-                  Not enough data yet.
+                  {t('stats.notEnoughData')}
                 </Text>
               ) : (
                 <>
@@ -877,17 +910,19 @@ export default function HomeScreen() {
                       <View
                         style={[styles.legendSwatch, { backgroundColor: theme.colors.primary }]}
                       />
-                      <Text style={[styles.legendText, { color: theme.colors.text }]}>Pee</Text>
+                      <Text style={[styles.legendText, { color: theme.colors.text }]}>
+                        {t('eventTypes.pee')}
+                      </Text>
                       <View
                         style={[styles.legendSwatch, { backgroundColor: theme.colors.text }]}
                       />
-                      <Text style={[styles.legendText, { color: theme.colors.text }]}>Poo</Text>
+                      <Text style={[styles.legendText, { color: theme.colors.text }]}>
+                        {t('eventTypes.poop')}
+                      </Text>
                     </View>
                   ) : null}
                   <Text style={[styles.statsSummary, { color: theme.colors.muted }]}>
-                    {typeFilter === 'all'
-                      ? `Totals: Pee ${statsData.totals.pee} | Poo ${statsData.totals.poop}`
-                      : `Total: ${typeFilter === 'pee' ? statsData.totals.pee : statsData.totals.poop}`}
+                    {statsSummaryText}
                   </Text>
                 </>
               )}
@@ -909,16 +944,18 @@ export default function HomeScreen() {
               { backgroundColor: theme.colors.card, borderColor: theme.colors.border },
             ]}
           >
-            <Text style={[styles.modalTitle, { color: theme.colors.text }]}>Delete event?</Text>
+            <Text style={[styles.modalTitle, { color: theme.colors.text }]}>
+              {t('modals.deleteEventTitle')}
+            </Text>
             <View style={styles.modalDetails}>
               <Text style={[styles.modalDetailText, { color: theme.colors.text }]}>
-                Type: {deleteTypeLabel}
+                {t('modals.typeLabel')}: {deleteTypeLabel}
               </Text>
               <Text style={[styles.modalDetailText, { color: theme.colors.text }]}>
-                Time: {deleteTimeLabel}
+                {t('modals.timeLabel')}: {deleteTimeLabel}
               </Text>
               <Text style={[styles.modalDetailText, { color: theme.colors.text }]}>
-                Date: {deleteDateLabel}
+                {t('modals.dateLabel')}: {deleteDateLabel}
               </Text>
             </View>
             <View style={styles.modalButtons}>
@@ -929,14 +966,16 @@ export default function HomeScreen() {
                 ]}
                 onPress={handleCancelDelete}
               >
-                <Text style={[styles.modalSecondaryText, { color: theme.colors.text }]}>Cancel</Text>
+                <Text style={[styles.modalSecondaryText, { color: theme.colors.text }]}>
+                  {t('common.cancel')}
+                </Text>
               </Pressable>
               <Pressable
                 style={[styles.modalPrimaryButton, { backgroundColor: theme.colors.primary }]}
                 onPress={handleConfirmDelete}
               >
                 <Text style={[styles.modalPrimaryText, { color: theme.colors.primaryText }]}>
-                  Delete
+                  {t('common.delete')}
                 </Text>
               </Pressable>
             </View>

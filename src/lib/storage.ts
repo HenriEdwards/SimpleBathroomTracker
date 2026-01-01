@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import type { AppSettings, BathroomEvent, EventType, ProState } from '../types';
+import { isSupportedLanguage } from '../i18n/languages';
 import { DEFAULT_PEE_ICON, DEFAULT_POOP_ICON, isValidIcon } from './icons';
 
 const BC_EVENTS = 'BC_EVENTS';
@@ -96,6 +97,7 @@ export async function loadSettings(): Promise<AppSettings> {
     widgetOpacity,
     iconPee: stored.iconPee ?? DEFAULT_PEE_ICON,
     iconPoop: stored.iconPoop ?? DEFAULT_POOP_ICON,
+    language: isSupportedLanguage(stored.language) ? stored.language : undefined,
   };
   let sanitized = false;
   if (!isValidIcon(normalized.iconPee)) {

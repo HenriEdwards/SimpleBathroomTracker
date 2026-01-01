@@ -1,0 +1,226 @@
+{
+  "app": {
+    "title": "Bathroom Tracker"
+  },
+  "screens": {
+    "home": "Bathroom Tracker",
+    "export": "エクスポート",
+    "settings": "設定",
+    "paywall": "Proをアンロック",
+    "proUnlocked": "Pro解除済み"
+  },
+  "nav": {
+    "settings": "設定",
+    "export": "エクスポート"
+  },
+  "common": {
+    "close": "閉じる",
+    "closeShort": "X",
+    "cancel": "キャンセル",
+    "delete": "削除",
+    "clear": "消去",
+    "reset": "リセット",
+    "pro": "Pro",
+    "unlockPro": "Proをアンロック",
+    "proUnlocked": "Pro解除済み"
+  },
+  "labels": {
+    "last": "最後",
+    "dateRange": "日付範囲",
+    "type": "種類",
+    "date": "日付",
+    "time": "時間",
+    "range": "範囲",
+    "total": "合計"
+  },
+  "range": {
+    "today": "今日",
+    "week": "週",
+    "month": "月",
+    "year": "年",
+    "all": "すべて",
+    "thisWeek": "今週",
+    "thisMonth": "今月",
+    "thisYear": "今年",
+    "allTime": "全期間"
+  },
+  "tabs": {
+    "events": "イベント",
+    "stats": "統計"
+  },
+  "eventTypes": {
+    "pee": "おしっこ",
+    "poop": "うんち"
+  },
+  "empty": {
+    "noEventsYet": "まだイベントがありません。"
+  },
+  "list": {
+    "showingCount": "全{{total, number}}件中{{shown, number}}件を表示",
+    "loadMore": "さらに{{count, number}}件読み込む",
+    "end": "終わり"
+  },
+  "stats": {
+    "checkingPro": "Proステータスを確認中...",
+    "lockedMessage": "統計とグラフはPro機能です。",
+    "chartUnavailable": "チャートは現在利用できません。",
+    "noData": "この範囲のデータはまだありません。",
+    "notEnoughData": "データが十分ではありません。",
+    "totals": "合計: {{peeLabel}} {{pee, number}} | {{poopLabel}} {{poop, number}}",
+    "total": "合計: {{count, number}}"
+  },
+  "modals": {
+    "deleteEventTitle": "イベントを削除しますか？",
+    "typeLabel": "種類",
+    "timeLabel": "時間",
+    "dateLabel": "日付"
+  },
+  "settings": {
+    "sectionAppearance": "外観",
+    "sectionIconsPrivacy": "アイコン / プライバシー",
+    "sectionPro": "Pro",
+    "sectionFeedback": "フィードバック",
+    "sectionDeveloper": "開発者",
+    "sectionData": "データ",
+    "sectionContact": "連絡先",
+    "mode": "モード",
+    "light": "ライト",
+    "dark": "ダーク",
+    "themePreset": "テーマプリセット",
+    "widgetOpacity": "ウィジェットの不透明度",
+    "opacityValue": "不透明度: {{value, number}}%",
+    "timeFormat": "時間形式",
+    "timeFormat24": "24h",
+    "timeFormat12": "12h",
+    "iconPee": "おしっこアイコン",
+    "iconPoo": "うんちアイコン",
+    "chooseIconPrivacy": "プライバシーのためのアイコンを選択",
+    "status": "状態: {{status}}",
+    "statusProUnlocked": "Pro解除済み",
+    "statusProLocked": "Proロック中",
+    "rateApp": "アプリを評価",
+    "requestFeature": "機能をリクエスト",
+    "enableProDev": "Proを有効化 (dev)",
+    "seedDemoData": "デモデータを生成",
+    "seedCaption": "過去90日分のリアルなイベントを生成します。",
+    "clearSeed": "消去 + 生成",
+    "clearAllEvents": "すべてのイベントを消去",
+    "resetSettings": "設定をリセット",
+    "language": "言語",
+    "proBadge": "Pro",
+    "contactHandle": "@henriedev",
+    "iconPickerPeeTitle": "おしっこアイコン",
+    "iconPickerPooTitle": "うんちアイコン"
+  },
+  "paywall": {
+    "title": "Proをアンロック",
+    "subtitle": "永久解除。アイコン、テーマ、ウィジェットの不透明度、エクスポートをカスタムできます。",
+    "buyLifetime": "永久版を購入{{price}}",
+    "restore": "購入を復元",
+    "cancel": "キャンセル"
+  },
+  "proUnlocked": {
+    "title": "Pro解除済み",
+    "subtitle": "永久Proアクセスがあります。",
+    "included": "含まれるもの:",
+    "close": "閉じる"
+  },
+  "proBenefits": {
+    "widgetCustomization": "ウィジェットのカスタム (不透明度)",
+    "customIcons": "カスタムアイコン",
+    "themePresets": "テーマプリセット",
+    "exportPdf": "PDFへエクスポート",
+    "exportAll": "エクスポート (PDF/テキスト/CSV)",
+    "homeWidget": "ホームウィジェット (近日公開)",
+    "incognitoIcons": "匿名アイコン"
+  },
+  "upgradeModal": {
+    "title": "Proアップグレード",
+    "subtitleLocked": "以下の特典を解除:",
+    "subtitleUnlocked": "Proはすでに解除されています。",
+    "comingSoon": "近日公開。devビルドで解除できます。",
+    "enableProDev": "Proを有効化 (dev)"
+  },
+  "export": {
+    "filtersTitle": "フィルター",
+    "summaryTitle": "概要",
+    "exportTitle": "エクスポート",
+    "sharePdf": "PDFを共有",
+    "downloadPdf": "PDFをダウンロード",
+    "rangeSummary": "範囲: {{range}}",
+    "totalSummary": "合計: {{total, number}} ({{peeLabel}} {{pee, number}} / {{poopLabel}} {{poop, number}})",
+    "sharingUnavailableTitle": "共有できません",
+    "sharingUnavailableMessage": "このデバイスでは共有できません。",
+    "exportFailedTitle": "エクスポート失敗",
+    "exportFailedMessage": "PDFエクスポートを生成できませんでした。",
+    "storagePermissionTitle": "ストレージ権限",
+    "storagePermissionMessage": "Downloads に保存するためアクセスを許可してください。",
+    "allow": "許可",
+    "downloadCanceledTitle": "ダウンロードをキャンセルしました",
+    "downloadPermissionMessage": "PDFを保存するにはストレージ権限が必要です。",
+    "downloadChooseFolderMessage": "PDFを保存するフォルダーを選択してください。",
+    "savedTitle": "保存しました",
+    "savedMessage": "{{destination}} に保存しました",
+    "savedDownloadsMessage": "Downloads に保存しました",
+    "downloadsFolder": "Downloads",
+    "noWritableDirectory": "書き込み可能なディレクトリがありません。",
+    "exportSaveFailedMessage": "PDFエクスポートを保存できませんでした。",
+    "pdfTitle": "Bathroom Tracker エクスポート",
+    "pdfTrendTitle": "トレンド",
+    "pdfTableDate": "日付",
+    "pdfTableTime": "時間",
+    "pdfTableType": "種類",
+    "csvHeaderDate": "日付",
+    "csvHeaderTime": "時間",
+    "csvHeaderType": "種類",
+    "csvHeaderTimestamp": "timestamp"
+  },
+  "alerts": {
+    "clearAllTitle": "すべてのイベントを消去しますか？",
+    "clearAllMessage": "記録されたイベントがすべて削除されます。",
+    "seededEventsTitle": "イベントを生成しました",
+    "addedEventsTitle": "イベントを追加しました",
+    "seededEventsMessage_one": "{{count, number}}件のイベントを生成しました。",
+    "seededEventsMessage_other": "{{count, number}}件のイベントを生成しました。",
+    "addedEventsMessage_one": "{{count, number}}件のイベントを追加しました。",
+    "addedEventsMessage_other": "{{count, number}}件のイベントを追加しました。",
+    "seedDemoTitle": "デモデータを生成",
+    "seedDemoMessage": "既存のイベントに追加しますか、それとも置き換えますか？",
+    "resetTitle": "設定をリセットしますか？",
+    "resetMessage": "既定値に戻ります。",
+    "storeUnavailable": "現在ストアを開けません。",
+    "featureRequestSubject": "機能リクエスト - Bathroom Tracker",
+    "featureRequestBody": "追加してほしい機能を教えてください。",
+    "noEmailApp": "メールアプリがありません。",
+    "emailOpenFailed": "メールアプリを開けませんでした。",
+    "xOpenFailed": "Xプロフィールを開けませんでした。"
+  },
+  "buttons": {
+    "replace": "置き換え",
+    "append": "追加"
+  },
+  "proErrors": {
+    "billingUnavailable": "課金を利用できません。",
+    "purchaseFailed": "購入に失敗しました。",
+    "restoreFailed": "復元に失敗しました。",
+    "noPurchasesFound": "購入履歴が見つかりません。"
+  },
+  "languages": {
+    "en": "英語",
+    "es": "スペイン語",
+    "pt": "ポルトガル語",
+    "fr": "フランス語",
+    "hi": "ヒンディー語",
+    "id": "インドネシア語",
+    "de": "ドイツ語",
+    "ja": "日本語"
+  },
+  "themes": {
+    "t1": "リネン",
+    "t2": "レイク",
+    "t3": "シトラス",
+    "t4": "スレート",
+    "t5": "フォレスト",
+    "t_peachy": "ドリーム"
+  }
+}

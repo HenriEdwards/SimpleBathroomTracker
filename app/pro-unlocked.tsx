@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, useColorScheme, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 
 import type { AppSettings } from '../src/types';
 import { loadSettings } from '../src/lib/storage';
@@ -9,6 +10,7 @@ import { getTheme, resolveThemeMode } from '../src/lib/theme';
 
 export default function ProUnlockedScreen() {
   const router = useRouter();
+  const { t } = useTranslation();
   const systemMode = useColorScheme();
   const [settings, setSettings] = useState<AppSettings | null>(null);
 
@@ -41,25 +43,37 @@ export default function ProUnlockedScreen() {
             { backgroundColor: theme.colors.card, borderColor: theme.colors.border },
           ]}
         >
-          <Text style={[styles.title, { color: theme.colors.text }]}>Pro Unlocked</Text>
-          <Text style={[styles.subtitle, { color: theme.colors.muted }]}>
-            You have lifetime Pro access.
+          <Text style={[styles.title, { color: theme.colors.text }]}>
+            {t('proUnlocked.title')}
           </Text>
-          <Text style={[styles.sectionLabel, { color: theme.colors.text }]}>Included:</Text>
+          <Text style={[styles.subtitle, { color: theme.colors.muted }]}>
+            {t('proUnlocked.subtitle')}
+          </Text>
+          <Text style={[styles.sectionLabel, { color: theme.colors.text }]}>
+            {t('proUnlocked.included')}
+          </Text>
           <View style={styles.list}>
             <Text style={[styles.listItem, { color: theme.colors.text }]}>
-              - Widget customization (opacity)
+              - {t('proBenefits.widgetCustomization')}
             </Text>
-            <Text style={[styles.listItem, { color: theme.colors.text }]}>- Custom icons</Text>
-            <Text style={[styles.listItem, { color: theme.colors.text }]}>- Theme presets</Text>
-            <Text style={[styles.listItem, { color: theme.colors.text }]}>- Export to PDF</Text>
+            <Text style={[styles.listItem, { color: theme.colors.text }]}>
+              - {t('proBenefits.customIcons')}
+            </Text>
+            <Text style={[styles.listItem, { color: theme.colors.text }]}>
+              - {t('proBenefits.themePresets')}
+            </Text>
+            <Text style={[styles.listItem, { color: theme.colors.text }]}>
+              - {t('proBenefits.exportPdf')}
+            </Text>
           </View>
 
           <Pressable
             style={[styles.primaryButton, { backgroundColor: theme.colors.primary }]}
             onPress={() => router.back()}
           >
-            <Text style={{ color: theme.colors.primaryText, fontWeight: '600' }}>Close</Text>
+            <Text style={{ color: theme.colors.primaryText, fontWeight: '600' }}>
+              {t('common.close')}
+            </Text>
           </Pressable>
         </View>
       </ScrollView>

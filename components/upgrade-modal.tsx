@@ -1,4 +1,5 @@
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 
 import type { Theme } from '../src/lib/theme';
 
@@ -19,28 +20,35 @@ export default function UpgradeModal({
   onEnableDevPro,
   theme,
 }: UpgradeModalProps) {
+  const { t } = useTranslation();
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <View style={styles.backdrop}>
         <View style={[styles.card, { backgroundColor: theme.colors.card }]}>
-          <Text style={[styles.title, { color: theme.colors.text }]}>Pro Upgrade</Text>
+          <Text style={[styles.title, { color: theme.colors.text }]}>
+            {t('upgradeModal.title')}
+          </Text>
           <Text style={[styles.subtitle, { color: theme.colors.muted }]}>
-            {isPro ? 'Pro is already unlocked.' : 'Unlock these benefits:'}
+            {isPro ? t('upgradeModal.subtitleUnlocked') : t('upgradeModal.subtitleLocked')}
           </Text>
           <View style={styles.list}>
             <Text style={[styles.listItem, { color: theme.colors.text }]}>
-              - Export (PDF/Text/CSV)
+              - {t('proBenefits.exportAll')}
             </Text>
             <Text style={[styles.listItem, { color: theme.colors.text }]}>
-              - Home Widget (coming later)
+              - {t('proBenefits.homeWidget')}
             </Text>
-            <Text style={[styles.listItem, { color: theme.colors.text }]}>- Theme presets</Text>
-            <Text style={[styles.listItem, { color: theme.colors.text }]}>- Incognito icons</Text>
+            <Text style={[styles.listItem, { color: theme.colors.text }]}>
+              - {t('proBenefits.themePresets')}
+            </Text>
+            <Text style={[styles.listItem, { color: theme.colors.text }]}>
+              - {t('proBenefits.incognitoIcons')}
+            </Text>
           </View>
           {showDevToggle && !isPro ? (
             <>
               <Text style={[styles.notice, { color: theme.colors.muted }]}>
-                Coming soon. Dev builds can unlock now.
+                {t('upgradeModal.comingSoon')}
               </Text>
               <Pressable
                 style={[styles.primaryButton, { backgroundColor: theme.colors.primary }]}
@@ -48,7 +56,7 @@ export default function UpgradeModal({
                 accessibilityRole="button"
               >
                 <Text style={[styles.primaryButtonText, { color: theme.colors.primaryText }]}>
-                  Enable Pro (dev)
+                  {t('upgradeModal.enableProDev')}
                 </Text>
               </Pressable>
             </>
@@ -61,7 +69,9 @@ export default function UpgradeModal({
             onPress={onClose}
             accessibilityRole="button"
           >
-            <Text style={[styles.secondaryButtonText, { color: theme.colors.text }]}>Close</Text>
+            <Text style={[styles.secondaryButtonText, { color: theme.colors.text }]}>
+              {t('common.close')}
+            </Text>
           </Pressable>
         </View>
       </View>

@@ -1,4 +1,5 @@
 import { Modal, Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { useTranslation } from 'react-i18next';
 
 import type { Theme } from '../lib/theme';
 
@@ -21,6 +22,7 @@ export default function IconPickerModal({
   onClose,
   theme,
 }: IconPickerModalProps) {
+  const { t } = useTranslation();
   const { width } = useWindowDimensions();
   const columns = width < 360 ? 3 : 4;
   const gap = 12;
@@ -41,7 +43,7 @@ export default function IconPickerModal({
               style={[styles.closeButton, { borderColor: theme.colors.border }]}
               onPress={onClose}
             >
-              <Text style={{ color: theme.colors.text, fontWeight: '600' }}>Close</Text>
+              <Text style={{ color: theme.colors.text, fontWeight: '600' }}>{t('common.close')}</Text>
             </Pressable>
           </View>
           <View style={[styles.options, { gap }]}>

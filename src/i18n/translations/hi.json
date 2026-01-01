@@ -1,0 +1,226 @@
+{
+  "app": {
+    "title": "Bathroom Tracker"
+  },
+  "screens": {
+    "home": "Bathroom Tracker",
+    "export": "निर्यात",
+    "settings": "सेटिंग्स",
+    "paywall": "प्रो अनलॉक करें",
+    "proUnlocked": "प्रो अनलॉक"
+  },
+  "nav": {
+    "settings": "सेटिंग्स",
+    "export": "निर्यात"
+  },
+  "common": {
+    "close": "बंद करें",
+    "closeShort": "X",
+    "cancel": "रद्द करें",
+    "delete": "हटाएं",
+    "clear": "साफ़ करें",
+    "reset": "रीसेट करें",
+    "pro": "प्रो",
+    "unlockPro": "प्रो अनलॉक करें",
+    "proUnlocked": "प्रो अनलॉक"
+  },
+  "labels": {
+    "last": "पिछला",
+    "dateRange": "तिथि सीमा",
+    "type": "प्रकार",
+    "date": "तारीख",
+    "time": "समय",
+    "range": "सीमा",
+    "total": "कुल"
+  },
+  "range": {
+    "today": "आज",
+    "week": "सप्ताह",
+    "month": "माह",
+    "year": "वर्ष",
+    "all": "सभी",
+    "thisWeek": "इस सप्ताह",
+    "thisMonth": "इस माह",
+    "thisYear": "इस वर्ष",
+    "allTime": "अब तक"
+  },
+  "tabs": {
+    "events": "इवेंट्स",
+    "stats": "आंकड़े"
+  },
+  "eventTypes": {
+    "pee": "पेशाब",
+    "poop": "पूप"
+  },
+  "empty": {
+    "noEventsYet": "अभी तक कोई इवेंट नहीं।"
+  },
+  "list": {
+    "showingCount": "कुल {{total, number}} में से {{shown, number}} दिखा रहे हैं",
+    "loadMore": "{{count, number}} और लोड करें",
+    "end": "समाप्त"
+  },
+  "stats": {
+    "checkingPro": "प्रो स्थिति जांची जा रही है...",
+    "lockedMessage": "आंकड़े और ग्राफ प्रो फीचर हैं।",
+    "chartUnavailable": "चार्ट अभी उपलब्ध नहीं है।",
+    "noData": "इस सीमा के लिए अभी डेटा नहीं है।",
+    "notEnoughData": "अभी पर्याप्त डेटा नहीं है।",
+    "totals": "कुल: {{peeLabel}} {{pee, number}} | {{poopLabel}} {{poop, number}}",
+    "total": "कुल: {{count, number}}"
+  },
+  "modals": {
+    "deleteEventTitle": "इवेंट हटाएं?",
+    "typeLabel": "प्रकार",
+    "timeLabel": "समय",
+    "dateLabel": "तारीख"
+  },
+  "settings": {
+    "sectionAppearance": "रूप-रंग",
+    "sectionIconsPrivacy": "आइकन / गोपनीयता",
+    "sectionPro": "प्रो",
+    "sectionFeedback": "फीडबैक",
+    "sectionDeveloper": "डेवलपर",
+    "sectionData": "डेटा",
+    "sectionContact": "संपर्क",
+    "mode": "मोड",
+    "light": "हल्का",
+    "dark": "गहरा",
+    "themePreset": "थीम प्रीसेट",
+    "widgetOpacity": "विजेट अपारदर्शिता",
+    "opacityValue": "अपारदर्शिता: {{value, number}}%",
+    "timeFormat": "समय प्रारूप",
+    "timeFormat24": "24h",
+    "timeFormat12": "12h",
+    "iconPee": "पेशाब आइकन",
+    "iconPoo": "पूप आइकन",
+    "chooseIconPrivacy": "गोपनीयता के लिए आइकन चुनें",
+    "status": "स्थिति: {{status}}",
+    "statusProUnlocked": "प्रो अनलॉक",
+    "statusProLocked": "प्रो लॉक",
+    "rateApp": "ऐप को रेट करें",
+    "requestFeature": "फीचर अनुरोध करें",
+    "enableProDev": "प्रो सक्षम करें (dev)",
+    "seedDemoData": "डेमो डेटा सीड करें",
+    "seedCaption": "पिछले 90 दिनों के वास्तविक इवेंट बनाता है।",
+    "clearSeed": "साफ + सीड",
+    "clearAllEvents": "सभी इवेंट साफ करें",
+    "resetSettings": "सेटिंग्स रीसेट करें",
+    "language": "भाषा",
+    "proBadge": "प्रो",
+    "contactHandle": "@henriedev",
+    "iconPickerPeeTitle": "पेशाब आइकन",
+    "iconPickerPooTitle": "पूप आइकन"
+  },
+  "paywall": {
+    "title": "प्रो अनलॉक करें",
+    "subtitle": "लाइफटाइम अनलॉक। आइकन, थीम, विजेट अपारदर्शिता और एक्सपोर्ट कस्टम करें।",
+    "buyLifetime": "लाइफटाइम खरीदें{{price}}",
+    "restore": "खरीदारी बहाल करें",
+    "cancel": "रद्द करें"
+  },
+  "proUnlocked": {
+    "title": "प्रो अनलॉक",
+    "subtitle": "आपके पास लाइफटाइम प्रो एक्सेस है।",
+    "included": "शामिल:",
+    "close": "बंद करें"
+  },
+  "proBenefits": {
+    "widgetCustomization": "विजेट कस्टमाइज़ेशन (अपारदर्शिता)",
+    "customIcons": "कस्टम आइकन",
+    "themePresets": "थीम प्रीसेट",
+    "exportPdf": "PDF में एक्सपोर्ट",
+    "exportAll": "एक्सपोर्ट (PDF/टेक्स्ट/CSV)",
+    "homeWidget": "होम विजेट (जल्द आ रहा है)",
+    "incognitoIcons": "इन्कॉग्निटो आइकन"
+  },
+  "upgradeModal": {
+    "title": "प्रो अपग्रेड",
+    "subtitleLocked": "ये फायदे अनलॉक करें:",
+    "subtitleUnlocked": "प्रो पहले से अनलॉक है।",
+    "comingSoon": "जल्द आ रहा है। डेव बिल्ड अभी अनलॉक कर सकते हैं।",
+    "enableProDev": "प्रो सक्षम करें (dev)"
+  },
+  "export": {
+    "filtersTitle": "फ़िल्टर",
+    "summaryTitle": "सारांश",
+    "exportTitle": "निर्यात",
+    "sharePdf": "PDF साझा करें",
+    "downloadPdf": "PDF डाउनलोड करें",
+    "rangeSummary": "सीमा: {{range}}",
+    "totalSummary": "कुल: {{total, number}} ({{peeLabel}} {{pee, number}} / {{poopLabel}} {{poop, number}})",
+    "sharingUnavailableTitle": "शेयरिंग उपलब्ध नहीं",
+    "sharingUnavailableMessage": "इस डिवाइस पर शेयरिंग उपलब्ध नहीं है।",
+    "exportFailedTitle": "निर्यात विफल",
+    "exportFailedMessage": "PDF निर्यात बन नहीं सका।",
+    "storagePermissionTitle": "स्टोरेज अनुमति",
+    "storagePermissionMessage": "Downloads में निर्यात सेव करने के लिए अनुमति दें।",
+    "allow": "अनुमति दें",
+    "downloadCanceledTitle": "डाउनलोड रद्द",
+    "downloadPermissionMessage": "PDF सेव करने के लिए स्टोरेज अनुमति आवश्यक है।",
+    "downloadChooseFolderMessage": "PDF सेव करने के लिए फ़ोल्डर चुनें।",
+    "savedTitle": "सहेजा गया",
+    "savedMessage": "{{destination}} में सहेजा गया",
+    "savedDownloadsMessage": "Downloads में सहेजा गया",
+    "downloadsFolder": "Downloads",
+    "noWritableDirectory": "कोई लिखने योग्य डायरेक्टरी उपलब्ध नहीं है।",
+    "exportSaveFailedMessage": "PDF निर्यात सेव नहीं हो सका।",
+    "pdfTitle": "Bathroom Tracker निर्यात",
+    "pdfTrendTitle": "ट्रेंड",
+    "pdfTableDate": "तारीख",
+    "pdfTableTime": "समय",
+    "pdfTableType": "प्रकार",
+    "csvHeaderDate": "तारीख",
+    "csvHeaderTime": "समय",
+    "csvHeaderType": "प्रकार",
+    "csvHeaderTimestamp": "timestamp"
+  },
+  "alerts": {
+    "clearAllTitle": "सभी इवेंट साफ करें?",
+    "clearAllMessage": "यह सभी लॉग किए गए इवेंट हटा देगा।",
+    "seededEventsTitle": "सीड किए गए इवेंट",
+    "addedEventsTitle": "जोड़े गए इवेंट",
+    "seededEventsMessage_one": "सीड किया {{count, number}} इवेंट।",
+    "seededEventsMessage_other": "सीड किए {{count, number}} इवेंट।",
+    "addedEventsMessage_one": "जोड़ा {{count, number}} इवेंट।",
+    "addedEventsMessage_other": "जोड़े गए {{count, number}} इवेंट।",
+    "seedDemoTitle": "डेमो डेटा सीड करें",
+    "seedDemoMessage": "मौजूदा इवेंट जोड़ें या बदलें?",
+    "resetTitle": "सेटिंग्स रीसेट करें?",
+    "resetMessage": "यह डिफ़ॉल्ट्स बहाल करेगा।",
+    "storeUnavailable": "अभी स्टोर नहीं खुल सका।",
+    "featureRequestSubject": "फीचर अनुरोध - Bathroom Tracker",
+    "featureRequestBody": "बताएं कि आप कौन सा फीचर चाहते हैं।",
+    "noEmailApp": "कोई ईमेल ऐप उपलब्ध नहीं है।",
+    "emailOpenFailed": "ईमेल ऐप नहीं खुल सका।",
+    "xOpenFailed": "X प्रोफ़ाइल नहीं खुल सकी।"
+  },
+  "buttons": {
+    "replace": "बदलें",
+    "append": "जोड़ें"
+  },
+  "proErrors": {
+    "billingUnavailable": "बिलिंग उपलब्ध नहीं है।",
+    "purchaseFailed": "खरीद विफल।",
+    "restoreFailed": "रीस्टोर विफल।",
+    "noPurchasesFound": "कोई खरीद नहीं मिली।"
+  },
+  "languages": {
+    "en": "अंग्रेज़ी",
+    "es": "स्पेनिश",
+    "pt": "पुर्तगाली",
+    "fr": "फ्रेंच",
+    "hi": "हिन्दी",
+    "id": "इंडोनेशियाई",
+    "de": "जर्मन",
+    "ja": "जापानी"
+  },
+  "themes": {
+    "t1": "लिनन",
+    "t2": "झील",
+    "t3": "सिट्रस",
+    "t4": "स्लेट",
+    "t5": "जंगल",
+    "t_peachy": "सपने"
+  }
+}

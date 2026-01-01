@@ -1,0 +1,226 @@
+{
+  "app": {
+    "title": "Bathroom Tracker"
+  },
+  "screens": {
+    "home": "Bathroom Tracker",
+    "export": "Export",
+    "settings": "Settings",
+    "paywall": "Unlock Pro",
+    "proUnlocked": "Pro Unlocked"
+  },
+  "nav": {
+    "settings": "Settings",
+    "export": "Export"
+  },
+  "common": {
+    "close": "Close",
+    "closeShort": "X",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "clear": "Clear",
+    "reset": "Reset",
+    "pro": "Pro",
+    "unlockPro": "Unlock Pro",
+    "proUnlocked": "Pro Unlocked"
+  },
+  "labels": {
+    "last": "Last",
+    "dateRange": "Date range",
+    "type": "Type",
+    "date": "Date",
+    "time": "Time",
+    "range": "Range",
+    "total": "Total"
+  },
+  "range": {
+    "today": "Today",
+    "week": "Week",
+    "month": "Month",
+    "year": "Year",
+    "all": "All",
+    "thisWeek": "This week",
+    "thisMonth": "This month",
+    "thisYear": "This year",
+    "allTime": "All time"
+  },
+  "tabs": {
+    "events": "Events",
+    "stats": "Stats"
+  },
+  "eventTypes": {
+    "pee": "Pee",
+    "poop": "Poo"
+  },
+  "empty": {
+    "noEventsYet": "No events yet."
+  },
+  "list": {
+    "showingCount": "Showing {{shown, number}} of {{total, number}}",
+    "loadMore": "Load {{count, number}} more",
+    "end": "End"
+  },
+  "stats": {
+    "checkingPro": "Checking Pro status...",
+    "lockedMessage": "Stats & graphs are a Pro feature.",
+    "chartUnavailable": "Chart is unavailable right now.",
+    "noData": "No data for this range yet.",
+    "notEnoughData": "Not enough data yet.",
+    "totals": "Totals: {{peeLabel}} {{pee, number}} | {{poopLabel}} {{poop, number}}",
+    "total": "Total: {{count, number}}"
+  },
+  "modals": {
+    "deleteEventTitle": "Delete event?",
+    "typeLabel": "Type",
+    "timeLabel": "Time",
+    "dateLabel": "Date"
+  },
+  "settings": {
+    "sectionAppearance": "Appearance",
+    "sectionIconsPrivacy": "Icons / Privacy",
+    "sectionPro": "Pro",
+    "sectionFeedback": "Feedback",
+    "sectionDeveloper": "Developer",
+    "sectionData": "Data",
+    "sectionContact": "Contact",
+    "mode": "Mode",
+    "light": "Light",
+    "dark": "Dark",
+    "themePreset": "Theme preset",
+    "widgetOpacity": "Widget opacity",
+    "opacityValue": "Opacity: {{value, number}}%",
+    "timeFormat": "Time format",
+    "timeFormat24": "24h",
+    "timeFormat12": "12h",
+    "iconPee": "Pee icon",
+    "iconPoo": "Poo icon",
+    "chooseIconPrivacy": "Choose an icon for privacy",
+    "status": "Status: {{status}}",
+    "statusProUnlocked": "Pro unlocked",
+    "statusProLocked": "Pro locked",
+    "rateApp": "Rate the app",
+    "requestFeature": "Request a feature",
+    "enableProDev": "Enable Pro (dev)",
+    "seedDemoData": "Seed demo data",
+    "seedCaption": "Generates realistic events across the past 90 days.",
+    "clearSeed": "Clear + Seed",
+    "clearAllEvents": "Clear all events",
+    "resetSettings": "Reset settings",
+    "language": "Language",
+    "proBadge": "Pro",
+    "contactHandle": "@henriedev",
+    "iconPickerPeeTitle": "Pee icon",
+    "iconPickerPooTitle": "Poo icon"
+  },
+  "paywall": {
+    "title": "Unlock Pro",
+    "subtitle": "Lifetime unlock. Customize icons, themes, widget opacity, and export.",
+    "buyLifetime": "Buy Lifetime{{price}}",
+    "restore": "Restore Purchases",
+    "cancel": "Cancel"
+  },
+  "proUnlocked": {
+    "title": "Pro Unlocked",
+    "subtitle": "You have lifetime Pro access.",
+    "included": "Included:",
+    "close": "Close"
+  },
+  "proBenefits": {
+    "widgetCustomization": "Widget customization (opacity)",
+    "customIcons": "Custom icons",
+    "themePresets": "Theme presets",
+    "exportPdf": "Export to PDF",
+    "exportAll": "Export (PDF/Text/CSV)",
+    "homeWidget": "Home Widget (coming later)",
+    "incognitoIcons": "Incognito icons"
+  },
+  "upgradeModal": {
+    "title": "Pro Upgrade",
+    "subtitleLocked": "Unlock these benefits:",
+    "subtitleUnlocked": "Pro is already unlocked.",
+    "comingSoon": "Coming soon. Dev builds can unlock now.",
+    "enableProDev": "Enable Pro (dev)"
+  },
+  "export": {
+    "filtersTitle": "Filters",
+    "summaryTitle": "Summary",
+    "exportTitle": "Export",
+    "sharePdf": "Share PDF",
+    "downloadPdf": "Download PDF",
+    "rangeSummary": "Range: {{range}}",
+    "totalSummary": "Total: {{total, number}} ({{peeLabel}} {{pee, number}} / {{poopLabel}} {{poop, number}})",
+    "sharingUnavailableTitle": "Sharing unavailable",
+    "sharingUnavailableMessage": "Sharing is not available on this device.",
+    "exportFailedTitle": "Export failed",
+    "exportFailedMessage": "Unable to generate the PDF export.",
+    "storagePermissionTitle": "Storage permission",
+    "storagePermissionMessage": "Allow access to save exports to Downloads.",
+    "allow": "Allow",
+    "downloadCanceledTitle": "Download canceled",
+    "downloadPermissionMessage": "Storage permission is required to save the PDF.",
+    "downloadChooseFolderMessage": "Choose a folder to save the PDF.",
+    "savedTitle": "Saved",
+    "savedMessage": "Saved to {{destination}}",
+    "savedDownloadsMessage": "Saved to Downloads",
+    "downloadsFolder": "Downloads",
+    "noWritableDirectory": "No writable directory is available.",
+    "exportSaveFailedMessage": "Unable to save the PDF export.",
+    "pdfTitle": "Bathroom Tracker Export",
+    "pdfTrendTitle": "Trend",
+    "pdfTableDate": "Date",
+    "pdfTableTime": "Time",
+    "pdfTableType": "Type",
+    "csvHeaderDate": "date",
+    "csvHeaderTime": "time",
+    "csvHeaderType": "type",
+    "csvHeaderTimestamp": "timestamp"
+  },
+  "alerts": {
+    "clearAllTitle": "Clear all events?",
+    "clearAllMessage": "This will remove all logged events.",
+    "seededEventsTitle": "Seeded events",
+    "addedEventsTitle": "Added events",
+    "seededEventsMessage_one": "Seeded {{count, number}} event.",
+    "seededEventsMessage_other": "Seeded {{count, number}} events.",
+    "addedEventsMessage_one": "Added {{count, number}} event.",
+    "addedEventsMessage_other": "Added {{count, number}} events.",
+    "seedDemoTitle": "Seed demo data",
+    "seedDemoMessage": "Append to or replace existing events?",
+    "resetTitle": "Reset settings?",
+    "resetMessage": "This will restore defaults.",
+    "storeUnavailable": "Unable to open the store right now.",
+    "featureRequestSubject": "Feature request - Bathroom Tracker",
+    "featureRequestBody": "Tell me about the feature you would like to see.",
+    "noEmailApp": "No email app available.",
+    "emailOpenFailed": "Unable to open the email app.",
+    "xOpenFailed": "Unable to open the X profile."
+  },
+  "buttons": {
+    "replace": "Replace",
+    "append": "Append"
+  },
+  "proErrors": {
+    "billingUnavailable": "Billing unavailable.",
+    "purchaseFailed": "Purchase failed.",
+    "restoreFailed": "Restore failed.",
+    "noPurchasesFound": "No purchases found."
+  },
+  "languages": {
+    "en": "English",
+    "es": "Spanish",
+    "pt": "Portuguese",
+    "fr": "French",
+    "hi": "Hindi",
+    "id": "Indonesian",
+    "de": "German",
+    "ja": "Japanese"
+  },
+  "themes": {
+    "t1": "Linen",
+    "t2": "Lake",
+    "t3": "Citrus",
+    "t4": "Slate",
+    "t5": "Forest",
+    "t_peachy": "Dreams"
+  }
+}

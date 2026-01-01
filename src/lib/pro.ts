@@ -14,12 +14,18 @@ let iapInitPromise: Promise<boolean> | null = null;
 type ProHook = {
   isPro: boolean;
   isLoading: boolean;
-  error: string | null;
+  errorKey: ProErrorKey | null;
   price: string | null;
   devProOverride: boolean;
   purchase: () => Promise<boolean>;
   restore: () => Promise<boolean>;
 };
+
+type ProErrorKey =
+  | 'proErrors.billingUnavailable'
+  | 'proErrors.purchaseFailed'
+  | 'proErrors.restoreFailed'
+  | 'proErrors.noPurchasesFound';
 
 function updateCache(state: ProState) {
   cachedProState = state;
@@ -86,7 +92,7 @@ export function requirePro(isPro: boolean, openPaywall: () => void, action: () =
 export function usePro(): ProHook {
   const [proState, setProState] = useState<ProState>(cachedProState);
   const [isLoading, setIsLoading] = useState(!cachedLoaded);
-  const [error, setError] = useState<string | null>(null);
+  const [errorKey, setErrorKey] = useState<ProErrorKey | null>(null);
   const [price, setPrice] = useState<string | null>(null);
 
   useEffect(() => {
@@ -146,10 +152,10 @@ export function usePro(): ProHook {
   const isPro = useMemo(() => getEffectivePro(proState), [proState]);
 
   const purchase = useCallback(async () => {
-    setError(null);
+    setErrorKey(null);
     const ready = await ensureIapConnection();
     if (!ready) {
-      setError('Billing unavailable.');
+      setErrorKey('proErrors.billingUnavailable');
       return false;
     }
     try {
@@ -174,17 +180,17 @@ export function usePro(): ProHook {
     } catch (err) {
       const code = (err as { code?: string } | null)?.code;
       if (code !== 'E_USER_CANCELLED') {
-        setError('Purchase failed.');
+        setErrorKey('proErrors.purchaseFailed');
       }
       return false;
     }
   }, []);
 
   const restore = useCallback(async () => {
-    setError(null);
+    setErrorKey(null);
     const ready = await ensureIapConnection();
     if (!ready) {
-      setError('Billing unavailable.');
+      setErrorKey('proErrors.billingUnavailable');
       return false;
     }
     try {
@@ -194,10 +200,10 @@ export function usePro(): ProHook {
         await setProPurchased(true);
         return true;
       }
-      setError('No purchases found.');
+      setErrorKey('proErrors.noPurchasesFound');
       return false;
     } catch {
-      setError('Restore failed.');
+      setErrorKey('proErrors.restoreFailed');
       return false;
     }
   }, []);
@@ -205,7 +211,7 @@ export function usePro(): ProHook {
   return {
     isPro,
     isLoading,
-    error,
+    errorKey,
     price,
     devProOverride: proState.devProOverride,
     purchase,

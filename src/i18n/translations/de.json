@@ -1,0 +1,226 @@
+{
+  "app": {
+    "title": "Bathroom Tracker"
+  },
+  "screens": {
+    "home": "Bathroom Tracker",
+    "export": "Export",
+    "settings": "Einstellungen",
+    "paywall": "Pro freischalten",
+    "proUnlocked": "Pro freigeschaltet"
+  },
+  "nav": {
+    "settings": "Einstellungen",
+    "export": "Export"
+  },
+  "common": {
+    "close": "Schließen",
+    "closeShort": "X",
+    "cancel": "Abbrechen",
+    "delete": "Löschen",
+    "clear": "Löschen",
+    "reset": "Zurücksetzen",
+    "pro": "Pro",
+    "unlockPro": "Pro freischalten",
+    "proUnlocked": "Pro freigeschaltet"
+  },
+  "labels": {
+    "last": "Zuletzt",
+    "dateRange": "Datumsbereich",
+    "type": "Typ",
+    "date": "Datum",
+    "time": "Uhrzeit",
+    "range": "Bereich",
+    "total": "Gesamt"
+  },
+  "range": {
+    "today": "Heute",
+    "week": "Woche",
+    "month": "Monat",
+    "year": "Jahr",
+    "all": "Alle",
+    "thisWeek": "Diese Woche",
+    "thisMonth": "Dieser Monat",
+    "thisYear": "Dieses Jahr",
+    "allTime": "Gesamte Zeit"
+  },
+  "tabs": {
+    "events": "Ereignisse",
+    "stats": "Statistiken"
+  },
+  "eventTypes": {
+    "pee": "Pipi",
+    "poop": "Kaka"
+  },
+  "empty": {
+    "noEventsYet": "Noch keine Ereignisse."
+  },
+  "list": {
+    "showingCount": "Zeige {{shown, number}} von {{total, number}}",
+    "loadMore": "Weitere {{count, number}} laden",
+    "end": "Ende"
+  },
+  "stats": {
+    "checkingPro": "Pro-Status wird geprüft...",
+    "lockedMessage": "Statistiken und Diagramme sind ein Pro-Feature.",
+    "chartUnavailable": "Diagramm ist gerade nicht verfügbar.",
+    "noData": "Noch keine Daten für diesen Bereich.",
+    "notEnoughData": "Noch nicht genug Daten.",
+    "totals": "Gesamt: {{peeLabel}} {{pee, number}} | {{poopLabel}} {{poop, number}}",
+    "total": "Gesamt: {{count, number}}"
+  },
+  "modals": {
+    "deleteEventTitle": "Ereignis löschen?",
+    "typeLabel": "Typ",
+    "timeLabel": "Uhrzeit",
+    "dateLabel": "Datum"
+  },
+  "settings": {
+    "sectionAppearance": "Darstellung",
+    "sectionIconsPrivacy": "Symbole / Privatsphäre",
+    "sectionPro": "Pro",
+    "sectionFeedback": "Feedback",
+    "sectionDeveloper": "Entwickler",
+    "sectionData": "Daten",
+    "sectionContact": "Kontakt",
+    "mode": "Modus",
+    "light": "Hell",
+    "dark": "Dunkel",
+    "themePreset": "Theme-Preset",
+    "widgetOpacity": "Widget-Deckkraft",
+    "opacityValue": "Deckkraft: {{value, number}}%",
+    "timeFormat": "Zeitformat",
+    "timeFormat24": "24h",
+    "timeFormat12": "12h",
+    "iconPee": "Pipi-Symbol",
+    "iconPoo": "Kaka-Symbol",
+    "chooseIconPrivacy": "Symbol für Privatsphäre wählen",
+    "status": "Status: {{status}}",
+    "statusProUnlocked": "Pro freigeschaltet",
+    "statusProLocked": "Pro gesperrt",
+    "rateApp": "App bewerten",
+    "requestFeature": "Feature anfragen",
+    "enableProDev": "Pro aktivieren (dev)",
+    "seedDemoData": "Demodaten füllen",
+    "seedCaption": "Erstellt realistische Ereignisse der letzten 90 Tage.",
+    "clearSeed": "Löschen + Füllen",
+    "clearAllEvents": "Alle Ereignisse löschen",
+    "resetSettings": "Einstellungen zurücksetzen",
+    "language": "Sprache",
+    "proBadge": "Pro",
+    "contactHandle": "@henriedev",
+    "iconPickerPeeTitle": "Pipi-Symbol",
+    "iconPickerPooTitle": "Kaka-Symbol"
+  },
+  "paywall": {
+    "title": "Pro freischalten",
+    "subtitle": "Einmaliger Kauf. Symbole, Themes, Widget-Deckkraft und Export anpassen.",
+    "buyLifetime": "Lebenslang kaufen{{price}}",
+    "restore": "Käufe wiederherstellen",
+    "cancel": "Abbrechen"
+  },
+  "proUnlocked": {
+    "title": "Pro freigeschaltet",
+    "subtitle": "Du hast lebenslangen Pro-Zugriff.",
+    "included": "Enthalten:",
+    "close": "Schließen"
+  },
+  "proBenefits": {
+    "widgetCustomization": "Widget-Anpassung (Deckkraft)",
+    "customIcons": "Benutzerdefinierte Symbole",
+    "themePresets": "Theme-Presets",
+    "exportPdf": "Export als PDF",
+    "exportAll": "Export (PDF/Text/CSV)",
+    "homeWidget": "Startseiten-Widget (kommt später)",
+    "incognitoIcons": "Inkognito-Symbole"
+  },
+  "upgradeModal": {
+    "title": "Pro-Upgrade",
+    "subtitleLocked": "Diese Vorteile freischalten:",
+    "subtitleUnlocked": "Pro ist bereits freigeschaltet.",
+    "comingSoon": "Kommt bald. Dev-Builds können jetzt freischalten.",
+    "enableProDev": "Pro aktivieren (dev)"
+  },
+  "export": {
+    "filtersTitle": "Filter",
+    "summaryTitle": "Zusammenfassung",
+    "exportTitle": "Export",
+    "sharePdf": "PDF teilen",
+    "downloadPdf": "PDF herunterladen",
+    "rangeSummary": "Bereich: {{range}}",
+    "totalSummary": "Gesamt: {{total, number}} ({{peeLabel}} {{pee, number}} / {{poopLabel}} {{poop, number}})",
+    "sharingUnavailableTitle": "Teilen nicht verfügbar",
+    "sharingUnavailableMessage": "Teilen ist auf diesem Gerät nicht verfügbar.",
+    "exportFailedTitle": "Export fehlgeschlagen",
+    "exportFailedMessage": "PDF-Export konnte nicht erstellt werden.",
+    "storagePermissionTitle": "Speicherberechtigung",
+    "storagePermissionMessage": "Erlauben Sie den Zugriff zum Speichern von Exporten in Downloads.",
+    "allow": "Erlauben",
+    "downloadCanceledTitle": "Download abgebrochen",
+    "downloadPermissionMessage": "Speicherberechtigung ist erforderlich, um das PDF zu speichern.",
+    "downloadChooseFolderMessage": "Wählen Sie einen Ordner, um das PDF zu speichern.",
+    "savedTitle": "Gespeichert",
+    "savedMessage": "Gespeichert in {{destination}}",
+    "savedDownloadsMessage": "In Downloads gespeichert",
+    "downloadsFolder": "Downloads",
+    "noWritableDirectory": "Kein beschreibbares Verzeichnis verfügbar.",
+    "exportSaveFailedMessage": "PDF-Export konnte nicht gespeichert werden.",
+    "pdfTitle": "Bathroom Tracker Export",
+    "pdfTrendTitle": "Trend",
+    "pdfTableDate": "Datum",
+    "pdfTableTime": "Uhrzeit",
+    "pdfTableType": "Typ",
+    "csvHeaderDate": "datum",
+    "csvHeaderTime": "uhrzeit",
+    "csvHeaderType": "typ",
+    "csvHeaderTimestamp": "zeitstempel"
+  },
+  "alerts": {
+    "clearAllTitle": "Alle Ereignisse löschen?",
+    "clearAllMessage": "Dadurch werden alle protokollierten Ereignisse entfernt.",
+    "seededEventsTitle": "Ereignisse gefüllt",
+    "addedEventsTitle": "Ereignisse hinzugefügt",
+    "seededEventsMessage_one": "Es wurde {{count, number}} Ereignis gefüllt.",
+    "seededEventsMessage_other": "Es wurden {{count, number}} Ereignisse gefüllt.",
+    "addedEventsMessage_one": "Es wurde {{count, number}} Ereignis hinzugefügt.",
+    "addedEventsMessage_other": "Es wurden {{count, number}} Ereignisse hinzugefügt.",
+    "seedDemoTitle": "Demodaten füllen",
+    "seedDemoMessage": "Bestehende Ereignisse hinzufügen oder ersetzen?",
+    "resetTitle": "Einstellungen zurücksetzen?",
+    "resetMessage": "Dadurch werden die Standardwerte wiederhergestellt.",
+    "storeUnavailable": "Store kann gerade nicht geöffnet werden.",
+    "featureRequestSubject": "Feature-Anfrage - Bathroom Tracker",
+    "featureRequestBody": "Teile mir mit, welches Feature du dir wünschst.",
+    "noEmailApp": "Keine E-Mail-App verfügbar.",
+    "emailOpenFailed": "E-Mail-App konnte nicht geöffnet werden.",
+    "xOpenFailed": "X-Profil konnte nicht geöffnet werden."
+  },
+  "buttons": {
+    "replace": "Ersetzen",
+    "append": "Hinzufügen"
+  },
+  "proErrors": {
+    "billingUnavailable": "Abrechnung nicht verfügbar.",
+    "purchaseFailed": "Kauf fehlgeschlagen.",
+    "restoreFailed": "Wiederherstellung fehlgeschlagen.",
+    "noPurchasesFound": "Keine Käufe gefunden."
+  },
+  "languages": {
+    "en": "Englisch",
+    "es": "Spanisch",
+    "pt": "Portugiesisch",
+    "fr": "Französisch",
+    "hi": "Hindi",
+    "id": "Indonesisch",
+    "de": "Deutsch",
+    "ja": "Japanisch"
+  },
+  "themes": {
+    "t1": "Leinen",
+    "t2": "See",
+    "t3": "Zitrus",
+    "t4": "Schiefer",
+    "t5": "Wald",
+    "t_peachy": "Träume"
+  }
+}
