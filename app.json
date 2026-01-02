@@ -10,7 +10,7 @@
       "resizeMode": "contain",
       "backgroundColor": "#000000"
     },
-    "scheme": "bathroomtracker",
+    "scheme": "bathroomcounter",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
@@ -23,7 +23,7 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.anonymous.BathroomTracker",
+      "package": "com.anonymous.bathroomcounter",
       "versionCode": 1
     },
     "web": {
@@ -49,6 +49,12 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "14c3c92c-3443-4136-9be8-6164d865b6a0"
+      }
     }
   }
 }

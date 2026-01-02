@@ -215,6 +215,10 @@ export default function SettingsScreen() {
 
   const applySeedEvents = useCallback(
     async (seeded: BathroomEvent[], mode: 'append' | 'replace') => {
+      if (!__DEV__) {
+        setSeedBusy(false);
+        return;
+      }
       try {
         const existing = mode === 'append' ? await loadEvents() : [];
         const next = mode === 'append' ? [...seeded, ...existing] : seeded;
@@ -293,7 +297,7 @@ export default function SettingsScreen() {
   };
 
   const handleRateApp = useCallback(async () => {
-    const packageId = 'com.anonymous.BathroomTracker';
+    const packageId = 'com.anonymous.bathroomcounter';
     const marketUrl = `market://details?id=${packageId}`;
     const webUrl = `https://play.google.com/store/apps/details?id=${packageId}`;
     const target = Platform.OS === 'android' ? marketUrl : webUrl;

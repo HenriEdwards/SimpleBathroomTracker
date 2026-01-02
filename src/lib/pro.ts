@@ -37,6 +37,9 @@ export function getEffectivePro(state: ProState): boolean {
 }
 
 export async function setDevProOverride(on: boolean): Promise<void> {
+  if (!__DEV__) {
+    return;
+  }
   const current = await loadProState();
   const next = { ...current, devProOverride: on };
   updateCache(next);
@@ -218,3 +221,4 @@ export function usePro(): ProHook {
     restore,
   };
 }
+

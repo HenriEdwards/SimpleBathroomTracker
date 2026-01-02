@@ -21,6 +21,7 @@ export default function UpgradeModal({
   theme,
 }: UpgradeModalProps) {
   const { t } = useTranslation();
+  const showDevControls = __DEV__ && showDevToggle;
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <View style={styles.backdrop}>
@@ -45,7 +46,7 @@ export default function UpgradeModal({
               - {t('proBenefits.incognitoIcons')}
             </Text>
           </View>
-          {showDevToggle && !isPro ? (
+          {showDevControls && !isPro ? (
             <>
               <Text style={[styles.notice, { color: theme.colors.muted }]}>
                 {t('upgradeModal.comingSoon')}
