@@ -24,7 +24,7 @@
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "package": "com.anonymous.bathroomcounter",
+      "package": "com.anonymous.BathroomTracker",
       "versionCode": 1
     },
     "web": {
