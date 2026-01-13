@@ -1,4 +1,4 @@
-import { Modal, Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
+import { FlatList, Modal, Pressable, StyleSheet, Text, View, useWindowDimensions } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import type { Theme } from '../lib/theme';
@@ -23,12 +23,13 @@ export default function IconPickerModal({
   theme,
 }: IconPickerModalProps) {
   const { t } = useTranslation();
-  const { width } = useWindowDimensions();
+  const { height, width } = useWindowDimensions();
   const columns = width < 360 ? 3 : 4;
   const gap = 12;
   const sheetPadding = 16;
   const sidePadding = 24 + sheetPadding;
   const itemSize = Math.floor((width - sidePadding * 2 - gap * (columns - 1)) / columns);
+  const maxListHeight = Math.min(320, Math.round(height * 0.5));
 
   return (
     <Modal transparent visible={visible} animationType="slide" onRequestClose={onClose}>
@@ -46,12 +47,18 @@ export default function IconPickerModal({
               <Text style={{ color: theme.colors.text, fontWeight: '600' }}>{t('common.close')}</Text>
             </Pressable>
           </View>
-          <View style={[styles.options, { gap }]}>
-            {options.map((icon) => {
+          <FlatList
+            data={options}
+            keyExtractor={(item, index) => `${item}-${index}`}
+            numColumns={columns}
+            style={{ maxHeight: maxListHeight }}
+            contentContainerStyle={[styles.options, { gap }]}
+            columnWrapperStyle={{ gap, justifyContent: 'center' }}
+            showsVerticalScrollIndicator={false}
+            renderItem={({ item: icon }) => {
               const active = icon === selected;
               return (
                 <Pressable
-                  key={icon}
                   onPress={() => onSelect(icon)}
                   style={[
                     styles.option,
@@ -73,8 +80,8 @@ export default function IconPickerModal({
                   </Text>
                 </Pressable>
               );
-            })}
-          </View>
+            }}
+          />
         </Pressable>
       </Pressable>
     </Modal>
@@ -110,9 +117,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
   },
   options: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
+    paddingBottom: 4,
   },
   option: {
     borderWidth: 1,

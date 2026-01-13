@@ -1,9 +1,9 @@
 {
   "app": {
-    "title": "Bathroom Tracker"
+    "title": "Registro de alivio"
   },
   "screens": {
-    "home": "Bathroom Tracker",
+    "home": "Registro de alivio",
     "export": "Exportar",
     "settings": "Ajustes",
     "paywall": "Desbloquear Pro",
@@ -108,7 +108,7 @@
     "resetSettings": "Restablecer ajustes",
     "language": "Idioma",
     "proBadge": "Pro",
-    "contactHandle": "@henriedev",
+    "contactHandle": "@henrije",
     "iconPickerPeeTitle": "Icono de pipí",
     "iconPickerPooTitle": "Icono de caca"
   },
@@ -165,7 +165,7 @@
     "downloadsFolder": "Descargas",
     "noWritableDirectory": "No hay un directorio escribible disponible.",
     "exportSaveFailedMessage": "No se pudo guardar la exportación en PDF.",
-    "pdfTitle": "Exportación de Bathroom Tracker",
+    "pdfTitle": "Exportación de Registro de alivio",
     "pdfTrendTitle": "Tendencia",
     "pdfTableDate": "Fecha",
     "pdfTableTime": "Hora",
@@ -189,7 +189,7 @@
     "resetTitle": "¿Restablecer ajustes?",
     "resetMessage": "Esto restaurará los valores predeterminados.",
     "storeUnavailable": "No se pudo abrir la tienda ahora.",
-    "featureRequestSubject": "Solicitud de función - Bathroom Tracker",
+    "featureRequestSubject": "Solicitud de función - Registro de alivio",
     "featureRequestBody": "Cuéntame qué función te gustaría ver.",
     "noEmailApp": "No hay app de correo disponible.",
     "emailOpenFailed": "No se pudo abrir la app de correo.",
@@ -217,10 +217,12 @@
   },
   "themes": {
     "t1": "Lino",
-    "t2": "Lago",
-    "t3": "Cítrico",
-    "t4": "Pizarra",
-    "t5": "Bosque",
-    "t_peachy": "Sueños"
+    "t2": "Océano",
+    "t3": "Brasa",
+    "t4": "Violeta",
+    "t5": "Pizarra",
+    "t6": "Duna",
+    "t7": "Menta",
+    "t_peachy": "Rosa"
   }
 }

@@ -2,10 +2,11 @@ import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import Slider from '@react-native-community/slider';
 import { useFocusEffect } from '@react-navigation/native';
 import { useRouter } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import {
   Alert,
   Linking,
+  Modal,
   Platform,
   Pressable,
   ScrollView,
@@ -13,6 +14,7 @@ import {
   Switch,
   Text,
   useColorScheme,
+  useWindowDimensions,
   View,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
@@ -118,7 +120,17 @@ export default function SettingsScreen() {
   const { t } = useTranslation();
   const [settings, setSettings] = useState<AppSettings | null>(null);
   const [activePicker, setActivePicker] = useState<'pee' | 'poop' | null>(null);
+  const [themePickerOpen, setThemePickerOpen] = useState(false);
+  const [themePickerAnchor, setThemePickerAnchor] = useState<{
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  } | null>(null);
+  const themePickerRef = useRef<View>(null);
+  const [confirmAction, setConfirmAction] = useState<'clear' | 'reset' | null>(null);
   const systemMode = useColorScheme();
+  const { height: windowHeight } = useWindowDimensions();
   const { isPro, devProOverride } = usePro();
   const { openPaywall } = usePaywall();
   const [seedBusy, setSeedBusy] = useState(false);
@@ -149,6 +161,13 @@ export default function SettingsScreen() {
   const widgetOpacity = settings?.widgetOpacity ?? 1;
   const customizationLocked = !isPro;
   const selectedLanguage = settings?.language ?? getDeviceLanguage();
+  const selectedPreset = THEME_PRESETS.find((preset) => preset.id === settings?.themeId);
+  const activePreset = selectedPreset ?? THEME_PRESETS[0];
+  const confirmTitle =
+    confirmAction === 'clear' ? t('alerts.clearAllTitle') : t('alerts.resetTitle');
+  const confirmMessage =
+    confirmAction === 'clear' ? t('alerts.clearAllMessage') : t('alerts.resetMessage');
+  const confirmLabel = confirmAction === 'clear' ? t('common.clear') : t('common.reset');
 
   const updateSettings = async (next: AppSettings) => {
     setSettings(next);
@@ -200,17 +219,7 @@ export default function SettingsScreen() {
   };
 
   const handleClearEvents = () => {
-    Alert.alert(t('alerts.clearAllTitle'), t('alerts.clearAllMessage'), [
-      { text: t('common.cancel'), style: 'cancel' },
-      {
-        text: t('common.clear'),
-        style: 'destructive',
-        onPress: async () => {
-          await clearAllEvents();
-          await mirrorWidgetSummary([]);
-        },
-      },
-    ]);
+    setConfirmAction('clear');
   };
 
   const applySeedEvents = useCallback(
@@ -283,17 +292,7 @@ export default function SettingsScreen() {
   }, [applySeedEvents, seedBusy]);
 
   const handleResetSettings = () => {
-    Alert.alert(t('alerts.resetTitle'), t('alerts.resetMessage'), [
-      { text: t('common.cancel'), style: 'cancel' },
-      {
-        text: t('common.reset'),
-        style: 'destructive',
-        onPress: async () => {
-          await updateSettings(DEFAULT_SETTINGS);
-          await setI18nLanguage(getDeviceLanguage());
-        },
-      },
-    ]);
+    setConfirmAction('reset');
   };
 
   const handleRateApp = useCallback(async () => {
@@ -312,7 +311,7 @@ export default function SettingsScreen() {
   const handleRequestFeature = useCallback(async () => {
     const subject = t('alerts.featureRequestSubject');
     const body = t('alerts.featureRequestBody');
-    const mailto = `mailto:henriedwards.work@gmail.com?subject=${encodeURIComponent(
+    const mailto = `mailto:simpleutility.help@gmail.com?subject=${encodeURIComponent(
       subject
     )}&body=${encodeURIComponent(body)}`;
     try {
@@ -328,7 +327,7 @@ export default function SettingsScreen() {
   }, [t]);
 
   const handleOpenX = useCallback(async () => {
-    const handle = 'henriedev';
+    const handle = 'henrije';
     const appUrl = `twitter://user?screen_name=${handle}`;
     const webUrl = `https://x.com/${handle}`;
     try {
@@ -346,6 +345,45 @@ export default function SettingsScreen() {
     }
     openPaywall();
   };
+
+  const handleConfirmAction = useCallback(async () => {
+    if (!confirmAction) {
+      return;
+    }
+    try {
+      if (confirmAction === 'clear') {
+        await clearAllEvents();
+        await mirrorWidgetSummary([]);
+      } else {
+        await updateSettings(DEFAULT_SETTINGS);
+        await setI18nLanguage(getDeviceLanguage());
+      }
+    } finally {
+      setConfirmAction(null);
+    }
+  }, [confirmAction, updateSettings]);
+
+  const openThemePicker = useCallback(() => {
+    if (!settings) {
+      return;
+    }
+    if (customizationLocked) {
+      openPaywall();
+      return;
+    }
+    themePickerRef.current?.measureInWindow((x, y, width, height) => {
+      setThemePickerAnchor({ x, y, width, height });
+      setThemePickerOpen(true);
+    });
+  }, [customizationLocked, openPaywall, settings]);
+
+  const closeThemePicker = useCallback(() => {
+    setThemePickerOpen(false);
+  }, []);
+
+  const themeDropdownMaxHeight = themePickerAnchor
+    ? Math.max(160, Math.min(windowHeight - themePickerAnchor.y - themePickerAnchor.height - 24, 320))
+    : Math.min(320, Math.round(windowHeight * 0.45));
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.bg }]}>
@@ -391,36 +429,33 @@ export default function SettingsScreen() {
               </View>
             ) : null}
           </View>
-          {THEME_PRESETS.map((preset) => {
-            const active = settings?.themeId === preset.id;
-            return (
-              <Pressable
-                key={preset.id}
-                onPress={() => {
-                  if (!settings) {
-                    return;
-                  }
-                  if (customizationLocked) {
-                    openPaywall();
-                    return;
-                  }
-                  updateSettings({ ...settings, themeId: preset.id });
-                }}
-                style={[
-                  styles.rowButton,
-                  {
-                    borderColor: active ? theme.colors.primary : theme.colors.border,
-                    backgroundColor: theme.colors.card,
-                    opacity: customizationLocked ? 0.5 : 1,
-                  },
-                ]}
-              >
-                <Text style={{ color: theme.colors.text, fontWeight: active ? '700' : '500' }}>
-                  {t(`themes.${preset.id}`)}
+          <View ref={themePickerRef} collapsable={false}>
+            <Pressable
+              onPress={openThemePicker}
+              style={[
+                styles.rowButton,
+                {
+                  borderColor: theme.colors.border,
+                  backgroundColor: theme.colors.card,
+                  opacity: customizationLocked ? 0.5 : 1,
+                },
+              ]}
+              disabled={!settings}
+            >
+              <View style={styles.themeRow}>
+                <View
+                  style={[
+                    styles.themeSwatch,
+                    { backgroundColor: activePreset.accent, borderColor: theme.colors.border },
+                  ]}
+                />
+                <Text style={{ color: theme.colors.text, fontWeight: '600' }}>
+                  {t(`themes.${activePreset.id}`)}
                 </Text>
-              </Pressable>
-            );
-          })}
+              </View>
+              <FontAwesome6 name="chevron-down" size={14} color={theme.colors.muted} />
+            </Pressable>
+          </View>
           <Text style={[styles.label, { color: theme.colors.text }]}>
             {t('settings.widgetOpacity')}
           </Text>
@@ -718,6 +753,134 @@ export default function SettingsScreen() {
         onClose={() => setActivePicker(null)}
         theme={theme}
       />
+      <Modal
+        transparent
+        visible={confirmAction !== null}
+        animationType="fade"
+        onRequestClose={() => setConfirmAction(null)}
+      >
+        <View style={styles.confirmBackdrop}>
+          <View
+            style={[
+              styles.confirmCard,
+              { backgroundColor: theme.colors.card, borderColor: theme.colors.border },
+            ]}
+          >
+            <Text style={[styles.confirmTitle, { color: theme.colors.text }]}>{confirmTitle}</Text>
+            <Text style={[styles.confirmMessage, { color: theme.colors.muted }]}>
+              {confirmMessage}
+            </Text>
+            <View style={styles.confirmActions}>
+              <Pressable
+                style={[
+                  styles.confirmButton,
+                  { borderColor: theme.colors.border, backgroundColor: theme.colors.card },
+                ]}
+                onPress={() => setConfirmAction(null)}
+              >
+                <Text style={{ color: theme.colors.text, fontWeight: '600' }}>
+                  {t('common.cancel')}
+                </Text>
+              </Pressable>
+              <Pressable
+                style={[styles.confirmPrimaryButton, { backgroundColor: theme.colors.primary }]}
+                onPress={handleConfirmAction}
+              >
+                <Text style={{ color: theme.colors.primaryText, fontWeight: '600' }}>
+                  {confirmLabel}
+                </Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
+      <Modal
+        transparent
+        visible={themePickerOpen && themePickerAnchor !== null}
+        animationType="fade"
+        onRequestClose={closeThemePicker}
+      >
+        <Pressable style={styles.dropdownBackdrop} onPress={closeThemePicker}>
+          <Pressable
+            style={[
+              styles.dropdownMenu,
+              {
+                top: themePickerAnchor?.y ?? 0,
+                left: themePickerAnchor?.x ?? 0,
+                width: themePickerAnchor?.width ?? 0,
+                borderColor: theme.colors.border,
+                backgroundColor: theme.colors.card,
+              },
+            ]}
+            onPress={() => {}}
+          >
+            <Pressable
+              style={[styles.dropdownHeader, { borderColor: theme.colors.border }]}
+              onPress={closeThemePicker}
+            >
+              <View style={styles.themeRow}>
+                <View
+                  style={[
+                    styles.themeSwatch,
+                    { backgroundColor: activePreset.accent, borderColor: theme.colors.border },
+                  ]}
+                />
+                <Text style={{ color: theme.colors.text, fontWeight: '600' }}>
+                  {t(`themes.${activePreset.id}`)}
+                </Text>
+              </View>
+              <FontAwesome6 name="chevron-up" size={14} color={theme.colors.muted} />
+            </Pressable>
+            <ScrollView
+              style={{ maxHeight: themeDropdownMaxHeight }}
+              contentContainerStyle={styles.dropdownList}
+              showsVerticalScrollIndicator={false}
+              nestedScrollEnabled
+            >
+              {THEME_PRESETS.map((preset) => {
+                const active = settings?.themeId === preset.id;
+                return (
+                  <Pressable
+                    key={preset.id}
+                    onPress={async () => {
+                      if (!settings) {
+                        return;
+                      }
+                      if (customizationLocked) {
+                        openPaywall();
+                        return;
+                      }
+                      if (settings.themeId !== preset.id) {
+                        await updateSettings({ ...settings, themeId: preset.id });
+                      }
+                      closeThemePicker();
+                    }}
+                    style={[
+                      styles.dropdownOption,
+                      {
+                        borderColor: active ? theme.colors.primary : theme.colors.border,
+                        backgroundColor: theme.colors.card,
+                      },
+                    ]}
+                  >
+                    <View style={styles.themeRow}>
+                      <View
+                        style={[
+                          styles.themeSwatch,
+                          { backgroundColor: preset.accent, borderColor: theme.colors.border },
+                        ]}
+                      />
+                      <Text style={{ color: theme.colors.text, fontWeight: active ? '700' : '500' }}>
+                        {t(`themes.${preset.id}`)}
+                      </Text>
+                    </View>
+                  </Pressable>
+                );
+              })}
+            </ScrollView>
+          </Pressable>
+        </Pressable>
+      </Modal>
     </View>
   );
 }
@@ -749,6 +912,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     borderRadius: 12,
     borderWidth: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   sectionRow: {
     flexDirection: 'row',
@@ -792,6 +958,87 @@ const styles = StyleSheet.create({
   opacityValue: {
     fontSize: 13,
     fontWeight: '600',
+  },
+  themeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  themeSwatch: {
+    width: 14,
+    height: 14,
+    borderRadius: 4,
+    borderWidth: 1,
+  },
+  dropdownBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.18)',
+  },
+  dropdownMenu: {
+    position: 'absolute',
+    borderRadius: 14,
+    borderWidth: 1,
+    padding: 10,
+    gap: 8,
+  },
+  dropdownHeader: {
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  dropdownList: {
+    gap: 8,
+    paddingBottom: 4,
+  },
+  dropdownOption: {
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+  },
+  confirmBackdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.35)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 24,
+  },
+  confirmCard: {
+    width: '100%',
+    maxWidth: 420,
+    borderRadius: 16,
+    padding: 20,
+    borderWidth: 1,
+  },
+  confirmTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+  },
+  confirmMessage: {
+    marginTop: 8,
+    fontSize: 14,
+  },
+  confirmActions: {
+    marginTop: 16,
+    flexDirection: 'row',
+    gap: 12,
+  },
+  confirmButton: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 10,
+    alignItems: 'center',
+    borderWidth: 1,
+  },
+  confirmPrimaryButton: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 10,
+    alignItems: 'center',
   },
   segmentButton: {
     flex: 1,

@@ -1,9 +1,9 @@
 {
   "app": {
-    "title": "Bathroom Tracker"
+    "title": "Erleichterungsprotokoll"
   },
   "screens": {
-    "home": "Bathroom Tracker",
+    "home": "Erleichterungsprotokoll",
     "export": "Export",
     "settings": "Einstellungen",
     "paywall": "Pro freischalten",
@@ -108,7 +108,7 @@
     "resetSettings": "Einstellungen zurücksetzen",
     "language": "Sprache",
     "proBadge": "Pro",
-    "contactHandle": "@henriedev",
+    "contactHandle": "@henrije",
     "iconPickerPeeTitle": "Pipi-Symbol",
     "iconPickerPooTitle": "Kaka-Symbol"
   },
@@ -165,7 +165,7 @@
     "downloadsFolder": "Downloads",
     "noWritableDirectory": "Kein beschreibbares Verzeichnis verfügbar.",
     "exportSaveFailedMessage": "PDF-Export konnte nicht gespeichert werden.",
-    "pdfTitle": "Bathroom Tracker Export",
+    "pdfTitle": "Erleichterungsprotokoll Export",
     "pdfTrendTitle": "Trend",
     "pdfTableDate": "Datum",
     "pdfTableTime": "Uhrzeit",
@@ -189,7 +189,7 @@
     "resetTitle": "Einstellungen zurücksetzen?",
     "resetMessage": "Dadurch werden die Standardwerte wiederhergestellt.",
     "storeUnavailable": "Store kann gerade nicht geöffnet werden.",
-    "featureRequestSubject": "Feature-Anfrage - Bathroom Tracker",
+    "featureRequestSubject": "Feature-Anfrage - Erleichterungsprotokoll",
     "featureRequestBody": "Teile mir mit, welches Feature du dir wünschst.",
     "noEmailApp": "Keine E-Mail-App verfügbar.",
     "emailOpenFailed": "E-Mail-App konnte nicht geöffnet werden.",
@@ -217,10 +217,12 @@
   },
   "themes": {
     "t1": "Leinen",
-    "t2": "See",
-    "t3": "Zitrus",
-    "t4": "Schiefer",
-    "t5": "Wald",
-    "t_peachy": "Träume"
+    "t2": "Ozean",
+    "t3": "Glut",
+    "t4": "Violett",
+    "t5": "Schiefer",
+    "t6": "Düne",
+    "t7": "Minze",
+    "t_peachy": "Rose"
   }
 }

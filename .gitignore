@@ -3,6 +3,9 @@
 # dependencies
 node_modules/
 
+# important
+credentials.json
+
 # Expo
 .expo/
 dist/

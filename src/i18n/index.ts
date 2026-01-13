@@ -3,7 +3,12 @@ import { initReactI18next } from 'react-i18next';
 import * as Localization from 'expo-localization';
 
 import type { SupportedLanguage } from './languages';
-import { DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES, normalizeLanguage } from './languages';
+import {
+  DEFAULT_LANGUAGE,
+  SUPPORTED_LANGUAGES,
+  isSupportedLanguage,
+  normalizeLanguage,
+} from './languages';
 import en from './translations/en.json';
 import es from './translations/es.json';
 import pt from './translations/pt.json';
@@ -29,8 +34,20 @@ let initPromise: Promise<void> | null = null;
 
 function resolveDeviceLanguage(): SupportedLanguage {
   const locales = Localization.getLocales?.();
-  const languageTag = locales?.[0]?.languageTag ?? Localization.locale ?? DEFAULT_LANGUAGE;
-  return normalizeLanguage(languageTag);
+  if (Array.isArray(locales)) {
+    for (const locale of locales) {
+      const tag = locale?.languageTag ?? locale?.languageCode;
+      if (!tag) {
+        continue;
+      }
+      const base = tag.toLowerCase().split('-')[0];
+      if (isSupportedLanguage(base)) {
+        return base;
+      }
+    }
+  }
+  const fallbackTag = Localization.locale ?? DEFAULT_LANGUAGE;
+  return normalizeLanguage(fallbackTag);
 }
 
 export async function initI18n(preferred?: SupportedLanguage): Promise<void> {

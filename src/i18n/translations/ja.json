@@ -1,9 +1,9 @@
 {
   "app": {
-    "title": "Bathroom Tracker"
+    "title": "リリーフログ"
   },
   "screens": {
-    "home": "Bathroom Tracker",
+    "home": "リリーフログ",
     "export": "エクスポート",
     "settings": "設定",
     "paywall": "Proをアンロック",
@@ -108,7 +108,7 @@
     "resetSettings": "設定をリセット",
     "language": "言語",
     "proBadge": "Pro",
-    "contactHandle": "@henriedev",
+    "contactHandle": "@henrije",
     "iconPickerPeeTitle": "おしっこアイコン",
     "iconPickerPooTitle": "うんちアイコン"
   },
@@ -165,7 +165,7 @@
     "downloadsFolder": "Downloads",
     "noWritableDirectory": "書き込み可能なディレクトリがありません。",
     "exportSaveFailedMessage": "PDFエクスポートを保存できませんでした。",
-    "pdfTitle": "Bathroom Tracker エクスポート",
+    "pdfTitle": "リリーフログ エクスポート",
     "pdfTrendTitle": "トレンド",
     "pdfTableDate": "日付",
     "pdfTableTime": "時間",
@@ -189,7 +189,7 @@
     "resetTitle": "設定をリセットしますか？",
     "resetMessage": "既定値に戻ります。",
     "storeUnavailable": "現在ストアを開けません。",
-    "featureRequestSubject": "機能リクエスト - Bathroom Tracker",
+    "featureRequestSubject": "機能リクエスト - リリーフログ",
     "featureRequestBody": "追加してほしい機能を教えてください。",
     "noEmailApp": "メールアプリがありません。",
     "emailOpenFailed": "メールアプリを開けませんでした。",
@@ -217,10 +217,12 @@
   },
   "themes": {
     "t1": "リネン",
-    "t2": "レイク",
-    "t3": "シトラス",
-    "t4": "スレート",
-    "t5": "フォレスト",
-    "t_peachy": "ドリーム"
+    "t2": "オーシャン",
+    "t3": "残り火",
+    "t4": "バイオレット",
+    "t5": "スレート",
+    "t6": "砂丘",
+    "t7": "ミント",
+    "t_peachy": "ローズ"
   }
 }

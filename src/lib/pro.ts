@@ -5,7 +5,7 @@ import * as IAP from 'react-native-iap';
 import type { ProState } from '../types';
 import { loadProState, saveProState, subscribeProState } from './storage';
 
-const PRODUCT_ID = 'pro_lifetime';
+const PRODUCT_ID = 'relieflog_pro_lifetime';
 
 let cachedProState: ProState = { isPro: false, devProOverride: false };
 let cachedLoaded = false;
@@ -26,6 +26,14 @@ type ProErrorKey =
   | 'proErrors.purchaseFailed'
   | 'proErrors.restoreFailed'
   | 'proErrors.noPurchasesFound';
+
+type ProductLike = {
+  id?: string | null;
+  productId?: string | null;
+  localizedPrice?: string | null;
+  oneTimePurchaseOfferDetailsAndroid?: Array<{ formattedPrice: string }> | null;
+  price?: string | number | null;
+};
 
 function updateCache(state: ProState) {
   cachedProState = state;
@@ -60,20 +68,29 @@ async function ensureIapConnection(): Promise<boolean> {
   if (iapInitPromise) {
     return iapInitPromise;
   }
+  console.log('[pro] IAP init start');
   iapInitPromise = IAP.initConnection()
     .then(async () => {
-      try {
-        await IAP.flushFailedPurchasesCachedAsPendingAndroid();
-      } catch {
-        // Ignore init cleanup errors.
+      const flushFailedPurchasesCachedAsPendingAndroid =
+        IAP.flushFailedPurchasesCachedAsPendingAndroid;
+      if (typeof flushFailedPurchasesCachedAsPendingAndroid === 'function') {
+        try {
+          await flushFailedPurchasesCachedAsPendingAndroid();
+        } catch {
+          // Ignore init cleanup errors.
+        }
       }
+      console.log('[pro] IAP init done');
       return true;
     })
-    .catch(() => false);
+    .catch(() => {
+      console.log('[pro] IAP init failed');
+      return false;
+    });
   return iapInitPromise;
 }
 
-function normalizedPurchase(input: unknown) {
+function normalizePurchase(input: unknown) {
   if (!input) {
     return null;
   }
@@ -81,6 +98,27 @@ function normalizedPurchase(input: unknown) {
     return input[0] ?? null;
   }
   return input;
+}
+
+function getProductId(product: ProductLike): string | null {
+  return product.productId ?? product.id ?? null;
+}
+
+function getProductPrice(product: ProductLike): string | null {
+  if (product.localizedPrice) {
+    return product.localizedPrice;
+  }
+  const formattedOfferPrice = product.oneTimePurchaseOfferDetailsAndroid?.[0]?.formattedPrice;
+  if (formattedOfferPrice) {
+    return formattedOfferPrice;
+  }
+  if (typeof product.price === 'number') {
+    return product.price.toString();
+  }
+  if (typeof product.price === 'string') {
+    return product.price;
+  }
+  return null;
 }
 
 export function requirePro(isPro: boolean, openPaywall: () => void, action: () => void): boolean {
@@ -131,14 +169,14 @@ export function usePro(): ProHook {
         return;
       }
       try {
-        const products = await (IAP.getProducts as unknown as (args: { skus: string[] }) => Promise<any[]>)({
+        const products: ProductLike[] = await IAP.fetchProducts({
           skus: [PRODUCT_ID],
+          type: 'in-app',
         });
-        const product = products.find((item) => item.productId === PRODUCT_ID);
-        const nextPrice =
-          (product as { localizedPrice?: string; price?: string } | undefined)?.localizedPrice ||
-          (product as { price?: string } | undefined)?.price ||
-          null;
+        const productIds = products.map((item) => getProductId(item)).filter(Boolean);
+        console.log(`[pro] products=${products.length} ids=${productIds.join(',')}`);
+        const product = products.find((item) => getProductId(item) === PRODUCT_ID);
+        const nextPrice = product ? getProductPrice(product) : null;
         if (isActive) {
           setPrice(nextPrice);
         }
@@ -152,6 +190,34 @@ export function usePro(): ProHook {
     };
   }, []);
 
+  useEffect(() => {
+    const purchaseSubscription = IAP.purchaseUpdatedListener(async (purchase) => {
+      if (purchase.productId !== PRODUCT_ID) {
+        return;
+      }
+      try {
+        await IAP.finishTransaction({ purchase, isConsumable: false });
+      } catch {
+        // Ignore finish errors; entitlement is stored locally below.
+      }
+      await setProPurchased(true);
+    });
+    const errorSubscription = IAP.purchaseErrorListener((err) => {
+      const code =
+        err && typeof err === 'object' && 'code' in err && typeof err.code === 'string'
+          ? err.code
+          : null;
+      console.log('[pro] purchase error', code ?? 'unknown', err?.message ?? '');
+      if (code !== 'E_USER_CANCELLED') {
+        setErrorKey('proErrors.purchaseFailed');
+      }
+    });
+    return () => {
+      purchaseSubscription?.remove();
+      errorSubscription?.remove();
+    };
+  }, []);
+
   const isPro = useMemo(() => getEffectivePro(proState), [proState]);
 
   const purchase = useCallback(async () => {
@@ -162,26 +228,26 @@ export function usePro(): ProHook {
       return false;
     }
     try {
-      const result = await (IAP.requestPurchase as unknown as (args: { sku: string }) => Promise<any>)({
-        sku: PRODUCT_ID,
+      const result = await IAP.requestPurchase({
+        request: { google: { skus: [PRODUCT_ID] } },
+        type: 'in-app',
       });
-      const purchaseResult = normalizedPurchase(result);
+      const purchaseResult = normalizePurchase(result);
       if (!purchaseResult) {
         return false;
       }
       try {
         await IAP.finishTransaction({ purchase: purchaseResult, isConsumable: false });
       } catch {
-        try {
-          await IAP.finishTransaction(purchaseResult as unknown as any, false);
-        } catch {
-          // Ignore finish errors; entitlement is stored locally below.
-        }
+        // Ignore finish errors; entitlement is stored locally below.
       }
       await setProPurchased(true);
       return true;
     } catch (err) {
-      const code = (err as { code?: string } | null)?.code;
+      const code =
+        err && typeof err === 'object' && 'code' in err && typeof err.code === 'string'
+          ? err.code
+          : null;
       if (code !== 'E_USER_CANCELLED') {
         setErrorKey('proErrors.purchaseFailed');
       }
@@ -197,7 +263,9 @@ export function usePro(): ProHook {
       return false;
     }
     try {
-      const purchases = await (IAP.getAvailablePurchases as unknown as () => Promise<any[]>)();
+      const purchases = await IAP.getAvailablePurchases();
+      const purchaseIds = purchases.map((purchase) => purchase.productId);
+      console.log(`[pro] restore purchases=${purchases.length} ids=${purchaseIds.join(',')}`);
       const hasPro = purchases.some((purchase) => purchase.productId === PRODUCT_ID);
       if (hasPro) {
         await setProPurchased(true);
@@ -221,4 +289,3 @@ export function usePro(): ProHook {
     restore,
   };
 }
-

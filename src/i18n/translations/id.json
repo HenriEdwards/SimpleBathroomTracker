@@ -1,9 +1,9 @@
 {
   "app": {
-    "title": "Bathroom Tracker"
+    "title": "Log Kelegaan"
   },
   "screens": {
-    "home": "Bathroom Tracker",
+    "home": "Log Kelegaan",
     "export": "Ekspor",
     "settings": "Pengaturan",
     "paywall": "Buka Pro",
@@ -108,7 +108,7 @@
     "resetSettings": "Setel ulang pengaturan",
     "language": "Bahasa",
     "proBadge": "Pro",
-    "contactHandle": "@henriedev",
+    "contactHandle": "@henrije",
     "iconPickerPeeTitle": "Ikon pipis",
     "iconPickerPooTitle": "Ikon BAB"
   },
@@ -165,7 +165,7 @@
     "downloadsFolder": "Downloads",
     "noWritableDirectory": "Tidak ada direktori yang dapat ditulis.",
     "exportSaveFailedMessage": "Tidak dapat menyimpan ekspor PDF.",
-    "pdfTitle": "Ekspor Bathroom Tracker",
+    "pdfTitle": "Ekspor Log Kelegaan",
     "pdfTrendTitle": "Tren",
     "pdfTableDate": "Tanggal",
     "pdfTableTime": "Waktu",
@@ -189,7 +189,7 @@
     "resetTitle": "Setel ulang pengaturan?",
     "resetMessage": "Ini akan mengembalikan default.",
     "storeUnavailable": "Tidak dapat membuka toko sekarang.",
-    "featureRequestSubject": "Permintaan fitur - Bathroom Tracker",
+    "featureRequestSubject": "Permintaan fitur - Log Kelegaan",
     "featureRequestBody": "Ceritakan fitur yang ingin Anda lihat.",
     "noEmailApp": "Tidak ada aplikasi email tersedia.",
     "emailOpenFailed": "Tidak dapat membuka aplikasi email.",
@@ -217,10 +217,12 @@
   },
   "themes": {
     "t1": "Linen",
-    "t2": "Danau",
-    "t3": "Sitrus",
-    "t4": "Batu Tulis",
-    "t5": "Hutan",
-    "t_peachy": "Mimpi"
+    "t2": "Samudra",
+    "t3": "Bara",
+    "t4": "Ungu",
+    "t5": "Batu Tulis",
+    "t6": "Bukit Pasir",
+    "t7": "Mint",
+    "t_peachy": "Mawar"
   }
 }

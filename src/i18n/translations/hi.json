@@ -1,9 +1,9 @@
 {
   "app": {
-    "title": "Bathroom Tracker"
+    "title": "राहत लॉग"
   },
   "screens": {
-    "home": "Bathroom Tracker",
+    "home": "राहत लॉग",
     "export": "निर्यात",
     "settings": "सेटिंग्स",
     "paywall": "प्रो अनलॉक करें",
@@ -108,7 +108,7 @@
     "resetSettings": "सेटिंग्स रीसेट करें",
     "language": "भाषा",
     "proBadge": "प्रो",
-    "contactHandle": "@henriedev",
+    "contactHandle": "@henrije",
     "iconPickerPeeTitle": "पेशाब आइकन",
     "iconPickerPooTitle": "पूप आइकन"
   },
@@ -165,7 +165,7 @@
     "downloadsFolder": "Downloads",
     "noWritableDirectory": "कोई लिखने योग्य डायरेक्टरी उपलब्ध नहीं है।",
     "exportSaveFailedMessage": "PDF निर्यात सेव नहीं हो सका।",
-    "pdfTitle": "Bathroom Tracker निर्यात",
+    "pdfTitle": "राहत लॉग निर्यात",
     "pdfTrendTitle": "ट्रेंड",
     "pdfTableDate": "तारीख",
     "pdfTableTime": "समय",
@@ -189,7 +189,7 @@
     "resetTitle": "सेटिंग्स रीसेट करें?",
     "resetMessage": "यह डिफ़ॉल्ट्स बहाल करेगा।",
     "storeUnavailable": "अभी स्टोर नहीं खुल सका।",
-    "featureRequestSubject": "फीचर अनुरोध - Bathroom Tracker",
+    "featureRequestSubject": "फीचर अनुरोध - राहत लॉग",
     "featureRequestBody": "बताएं कि आप कौन सा फीचर चाहते हैं।",
     "noEmailApp": "कोई ईमेल ऐप उपलब्ध नहीं है।",
     "emailOpenFailed": "ईमेल ऐप नहीं खुल सका।",
@@ -216,11 +216,13 @@
     "ja": "जापानी"
   },
   "themes": {
-    "t1": "लिनन",
-    "t2": "झील",
-    "t3": "सिट्रस",
-    "t4": "स्लेट",
-    "t5": "जंगल",
-    "t_peachy": "सपने"
+    "t1": "लिनेन",
+    "t2": "समुद्र",
+    "t3": "अंगारा",
+    "t4": "बैंगनी",
+    "t5": "स्लेट",
+    "t6": "टिब्बा",
+    "t7": "पुदीना",
+    "t_peachy": "गुलाब"
   }
 }

@@ -1,9 +1,9 @@
 {
   "app": {
-    "title": "Bathroom Tracker"
+    "title": "ReliefLog"
   },
   "screens": {
-    "home": "Bathroom Tracker",
+    "home": "ReliefLog",
     "export": "Export",
     "settings": "Settings",
     "paywall": "Unlock Pro",
@@ -108,7 +108,7 @@
     "resetSettings": "Reset settings",
     "language": "Language",
     "proBadge": "Pro",
-    "contactHandle": "@henriedev",
+    "contactHandle": "@henrije",
     "iconPickerPeeTitle": "Pee icon",
     "iconPickerPooTitle": "Poo icon"
   },
@@ -165,7 +165,7 @@
     "downloadsFolder": "Downloads",
     "noWritableDirectory": "No writable directory is available.",
     "exportSaveFailedMessage": "Unable to save the PDF export.",
-    "pdfTitle": "Bathroom Tracker Export",
+    "pdfTitle": "ReliefLog Export",
     "pdfTrendTitle": "Trend",
     "pdfTableDate": "Date",
     "pdfTableTime": "Time",
@@ -189,7 +189,7 @@
     "resetTitle": "Reset settings?",
     "resetMessage": "This will restore defaults.",
     "storeUnavailable": "Unable to open the store right now.",
-    "featureRequestSubject": "Feature request - Bathroom Tracker",
+    "featureRequestSubject": "Feature request - ReliefLog",
     "featureRequestBody": "Tell me about the feature you would like to see.",
     "noEmailApp": "No email app available.",
     "emailOpenFailed": "Unable to open the email app.",
@@ -217,10 +217,12 @@
   },
   "themes": {
     "t1": "Linen",
-    "t2": "Lake",
-    "t3": "Citrus",
-    "t4": "Slate",
-    "t5": "Forest",
-    "t_peachy": "Dreams"
+    "t2": "Ocean",
+    "t3": "Ember",
+    "t4": "Violet",
+    "t5": "Slate",
+    "t6": "Dune",
+    "t7": "Mint",
+    "t_peachy": "Rose"
   }
 }

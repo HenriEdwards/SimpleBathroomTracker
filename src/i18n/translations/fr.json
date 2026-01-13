@@ -1,9 +1,9 @@
 {
   "app": {
-    "title": "Bathroom Tracker"
+    "title": "Journal de soulagement"
   },
   "screens": {
-    "home": "Bathroom Tracker",
+    "home": "Journal de soulagement",
     "export": "Exporter",
     "settings": "Paramètres",
     "paywall": "Déverrouiller Pro",
@@ -108,7 +108,7 @@
     "resetSettings": "Réinitialiser les paramètres",
     "language": "Langue",
     "proBadge": "Pro",
-    "contactHandle": "@henriedev",
+    "contactHandle": "@henrije",
     "iconPickerPeeTitle": "Icône pipi",
     "iconPickerPooTitle": "Icône caca"
   },
@@ -165,7 +165,7 @@
     "downloadsFolder": "Téléchargements",
     "noWritableDirectory": "Aucun répertoire inscriptible n'est disponible.",
     "exportSaveFailedMessage": "Impossible d'enregistrer l'export PDF.",
-    "pdfTitle": "Export Bathroom Tracker",
+    "pdfTitle": "Export Journal de soulagement",
     "pdfTrendTitle": "Tendance",
     "pdfTableDate": "Date",
     "pdfTableTime": "Heure",
@@ -189,7 +189,7 @@
     "resetTitle": "Réinitialiser les paramètres ?",
     "resetMessage": "Cela restaurera les paramètres par défaut.",
     "storeUnavailable": "Impossible d'ouvrir la boutique pour le moment.",
-    "featureRequestSubject": "Demande de fonctionnalité - Bathroom Tracker",
+    "featureRequestSubject": "Demande de fonctionnalité - Journal de soulagement",
     "featureRequestBody": "Dites-moi quelle fonctionnalité vous souhaitez voir.",
     "noEmailApp": "Aucune application mail disponible.",
     "emailOpenFailed": "Impossible d'ouvrir l'application mail.",
@@ -217,10 +217,12 @@
   },
   "themes": {
     "t1": "Lin",
-    "t2": "Lac",
-    "t3": "Agrumes",
-    "t4": "Ardoise",
-    "t5": "Forêt",
-    "t_peachy": "Rêves"
+    "t2": "Océan",
+    "t3": "Braise",
+    "t4": "Violet",
+    "t5": "Ardoise",
+    "t6": "Dune",
+    "t7": "Menthe",
+    "t_peachy": "Rose"
   }
 }

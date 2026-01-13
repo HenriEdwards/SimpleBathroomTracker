@@ -7,6 +7,7 @@ import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
 import 'react-native-reanimated';
 import { useTranslation } from 'react-i18next';
+import * as Localization from 'expo-localization';
 
 import type { AppSettings } from '../src/types';
 import { loadSettings, subscribeSettings } from '../src/lib/storage';
@@ -72,10 +73,28 @@ export default function RootLayout() {
     if (!i18nReady) {
       return;
     }
-    const targetLanguage = settings?.language ?? getDeviceLanguage();
-    if (getCurrentLanguage() !== targetLanguage) {
-      void setI18nLanguage(targetLanguage);
-    }
+    const syncLanguage = () => {
+      const targetLanguage = settings?.language ?? getDeviceLanguage();
+      if (getCurrentLanguage() !== targetLanguage) {
+        void setI18nLanguage(targetLanguage);
+      }
+    };
+    syncLanguage();
+    const handler = () => {
+      if (!settings?.language) {
+        syncLanguage();
+      }
+    };
+    const subscription = Localization.addLocalizationListener?.(handler);
+    return () => {
+      if (typeof subscription === 'function') {
+        subscription();
+      } else if (subscription && typeof subscription.remove === 'function') {
+        subscription.remove();
+      } else if (Localization.removeLocalizationListener) {
+        Localization.removeLocalizationListener(handler);
+      }
+    };
   }, [i18nReady, settings?.language]);
 
   const resolvedMode = resolveThemeMode(settings?.themeMode, systemMode);

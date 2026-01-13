@@ -1051,9 +1051,9 @@ const styles = StyleSheet.create({
   },
   actionAddButton: {
     alignSelf: 'center',
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+    width: 32,
+    height: 32,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
   },

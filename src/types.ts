@@ -12,7 +12,7 @@ export type BathroomEvent = {
 
 export type AppSettings = {
   timeFormat: '24h' | '12h';
-  themeId: 't1' | 't2' | 't3' | 't4' | 't5' | 't_peachy';
+  themeId: 't1' | 't2' | 't3' | 't4' | 't5' | 't6' | 't7' | 't_peachy';
   themeMode?: ThemeModePreference;
   widgetOpacity?: number;
   iconPee: string;

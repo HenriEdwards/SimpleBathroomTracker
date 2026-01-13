@@ -1,9 +1,9 @@
 {
   "app": {
-    "title": "Bathroom Tracker"
+    "title": "Registro de alívio"
   },
   "screens": {
-    "home": "Bathroom Tracker",
+    "home": "Registro de alívio",
     "export": "Exportar",
     "settings": "Configurações",
     "paywall": "Desbloquear Pro",
@@ -108,7 +108,7 @@
     "resetSettings": "Redefinir configurações",
     "language": "Idioma",
     "proBadge": "Pro",
-    "contactHandle": "@henriedev",
+    "contactHandle": "@henrije",
     "iconPickerPeeTitle": "Ícone de xixi",
     "iconPickerPooTitle": "Ícone de cocô"
   },
@@ -165,7 +165,7 @@
     "downloadsFolder": "Downloads",
     "noWritableDirectory": "Nenhum diretório gravável está disponível.",
     "exportSaveFailedMessage": "Não foi possível salvar a exportação em PDF.",
-    "pdfTitle": "Exportação do Bathroom Tracker",
+    "pdfTitle": "Exportação do Registro de alívio",
     "pdfTrendTitle": "Tendência",
     "pdfTableDate": "Data",
     "pdfTableTime": "Hora",
@@ -189,7 +189,7 @@
     "resetTitle": "Redefinir configurações?",
     "resetMessage": "Isso restaurará os padrões.",
     "storeUnavailable": "Não foi possível abrir a loja agora.",
-    "featureRequestSubject": "Pedido de recurso - Bathroom Tracker",
+    "featureRequestSubject": "Pedido de recurso - Registro de alívio",
     "featureRequestBody": "Conte qual recurso você gostaria de ver.",
     "noEmailApp": "Nenhum app de email disponível.",
     "emailOpenFailed": "Não foi possível abrir o app de email.",
@@ -217,10 +217,12 @@
   },
   "themes": {
     "t1": "Linho",
-    "t2": "Lago",
-    "t3": "Cítrico",
-    "t4": "Ardósia",
-    "t5": "Floresta",
-    "t_peachy": "Sonhos"
+    "t2": "Oceano",
+    "t3": "Brasa",
+    "t4": "Violeta",
+    "t5": "Ardósia",
+    "t6": "Duna",
+    "t7": "Menta",
+    "t_peachy": "Rosa"
   }
 }
